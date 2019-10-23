@@ -137,6 +137,9 @@ $app->group(['namespace' => 'App\Http\Controllers\v2','prefix' => 'v2', 'middlew
     $app->get('ecapi.wxa.qrcode', 'SiteController@wxQrcode');
 
     $app->post('ecapi.site.configs', 'SiteController@configs');
+
+    // 设备注册
+    $app->post('ecapi.auth.device.signup', 'UserController@signupByDevice');
 });
 
 //Authorization

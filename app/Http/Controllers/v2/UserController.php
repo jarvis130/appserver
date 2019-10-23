@@ -309,4 +309,25 @@ class UserController extends Controller
         
         return $this->json(Member::bindMobile($this->validated));
     }
+
+    /**
+     * POST /user/signup-device
+     */
+    public function signupByDevice()
+    {
+        $rules = [
+            'device_id'     => 'string',
+            'username'      => 'required|min:3|max:25|alpha_num',
+            'email'         => 'required|email',
+            'password'      => 'required|min:6|max:20',
+            'invite_code'   => 'integer'
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = Member::createMember($this->validated);
+        return $this->json($data);
+    }
 }
