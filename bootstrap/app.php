@@ -103,6 +103,7 @@ $app->routeMiddleware([
 
 $app->group(['namespace' => 'App\Http\Controllers'], function ($app) {
     require __DIR__.'/../app/Http/routes.php';
+    require __DIR__.'/../app/Http/routes_admin.php';
 });
 
 $app->configureMonologUsing(function (Monolog\Logger $monolog) use ($app) {

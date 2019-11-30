@@ -8,8 +8,13 @@
 
 namespace App\Http\Controllers\admin;
 
+use App\Http\Controllers\Controller;
+use App\Models\admin\AdminUser;
+use Illuminate\Http\Request;
+use App\Helper\Token;
+use Cookie;
 
-class UserController extends Controller
+class AdminUserController extends Controller
 {
     /**
      * POST /admin/signin
@@ -25,7 +30,7 @@ class UserController extends Controller
             return $error;
         }
 
-        $data = Member::login($this->validated);
+        $data = AdminUser::login($this->validated);
         return $this->json($data);
     }
 }

@@ -11,5 +11,24 @@ namespace App\Http\Controllers\admin;
 
 class VideoController extends Controller
 {
+    /**
+     * POST /api.video.add
+     */
+    public function add()
+    {
+        $rules = [
+            'title' => 'string',
+            'status' => 'required|integer|min:1',
+        ];
 
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        extract($this->validated);
+
+        $data = VideoTag::add($this->validated);
+
+        return $this->json($data);
+    }
 }
