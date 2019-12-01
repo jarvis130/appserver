@@ -33,4 +33,14 @@ class AdminUserController extends Controller
         $data = AdminUser::login($this->validated);
         return $this->json($data);
     }
+
+    /**
+     * Get api.auth.getUserInfo
+     */
+    public function getUserInfo()
+    {
+
+        $data = AdminUser::getUserInfo();
+        return $this->json($data);
+    }
 }

@@ -36,6 +36,21 @@ class AdminUser extends BaseModel
         return self::formatError(self::BAD_REQUEST, trans('message.member.failed'));
     }
 
+    public static function getUserInfo()
+    {
+        $uid = Token::authorization();
+
+        $model = self::where('user_id', $uid)->first();
+        $data = $model->toArray();
+
+        $access = [
+            'admin'
+        ];
+
+        $data['access'] = $access;
+        return self::formatBody(['data' => $data]);
+    }
+
     private static function validatePassword($username, $password)
     {
         $type = self::getUsernameType($username);

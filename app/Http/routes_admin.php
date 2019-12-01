@@ -32,6 +32,7 @@ $app->group(['namespace' => 'App\Http\Controllers\admin','prefix' => 'admin', 'm
 
 //Authorization
 $app->group(['prefix' => 'admin', 'namespace' => 'App\Http\Controllers\admin', 'middleware' => ['token', 'xss']], function ($app) {
+    $app->get('api.auth.getUserInfo', 'AdminUserController@getUserInfo');
     //video tag
     $app->post('api.videotag.add', 'VideoTagController@add');
     $app->post('api.videotag.edit', 'VideoTagController@edit');
