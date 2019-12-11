@@ -2,244 +2,244 @@
 
 use App\Helper\Token;
 
-$app->get('/', function () use ($app) {
-    return 'Hi shopex';
+$router->get('/', function () use ($router) {
+    return $router->app->version();
 });
 
 //Other
-$app->group(['namespace' => 'App\Http\Controllers\v2', 'prefix' => 'v2'], function ($app) {
-    $app->get('article.{id:[0-9]+}', 'ArticleController@show');
+$router->group(['namespace' => 'v2', 'prefix' => 'v2'], function ($router) {
+    $router->get('article.{id:[0-9]+}', 'ArticleController@show');
 
-    $app->get('notice.{id:[0-9]+}', 'NoticeController@show');
+    $router->get('notice.{id:[0-9]+}', 'NoticeController@show');
 
-    $app->post('order.notify.{code}', 'OrderController@notify');
+    $router->post('order.notify.{code}', 'OrderController@notify');
 
-    $app->get('product.intro.{id:[0-9]+}', 'GoodsController@intro');
-    
-    $app->get('product.share.{id:[0-9]+}', 'GoodsController@share');
+    $router->get('product.intro.{id:[0-9]+}', 'GoodsController@intro');
 
-    $app->get('ecapi.auth.web', 'UserController@webOauth');
+    $router->get('product.share.{id:[0-9]+}', 'GoodsController@share');
 
-    $app->get('ecapi.auth.web.callback/{vendor:[0-9]+}', 'UserController@webCallback');
+    $router->get('ecapi.auth.web', 'UserController@webOauth');
+
+    $router->get('ecapi.auth.web.callback/{vendor:[0-9]+}', 'UserController@webCallback');
 });
 
 //Guest
-$app->group(['namespace' => 'App\Http\Controllers\v2','prefix' => 'v2', 'middleware' => ['xss']], function ($app) {
-    $app->post('ecapi.ad.list', 'AdController@ad_list');
+$router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], function ($router) {
+    $router->post('ecapi.ad.list', 'AdController@ad_list');
 
-    $app->post('ecapi.access.dns', 'AccessController@dns');
+    $router->post('ecapi.access.dns', 'AccessController@dns');
 
-    $app->post('ecapi.access.batch', 'AccessController@batch');
+    $router->post('ecapi.access.batch', 'AccessController@batch');
 
-    $app->post('ecapi.category.list', 'GoodsController@category');
-    
-    $app->post('ecapi.activity.list', 'ActivityController@index');
+    $router->post('ecapi.category.list', 'GoodsController@category');
 
-    $app->post('ecapi.activity.get', 'ActivityController@info');
+    $router->post('ecapi.activity.list', 'ActivityController@index');
 
-    $app->post('ecapi.product.list', 'GoodsController@index');
-    
-    $app->post('ecapi.home.product.list', 'GoodsController@home');
+    $router->post('ecapi.activity.get', 'ActivityController@info');
 
-    $app->post('ecapi.search.product.list', 'GoodsController@search');
+    $router->post('ecapi.product.list', 'GoodsController@index');
 
-    $app->post('ecapi.review.product.list', 'GoodsController@review');
+    $router->post('ecapi.home.product.list', 'GoodsController@home');
 
-    $app->post('ecapi.review.product.subtotal', 'GoodsController@subtotal');
+    $router->post('ecapi.search.product.list', 'GoodsController@search');
 
-    $app->post('ecapi.recommend.product.list', 'GoodsController@recommendList');
+    $router->post('ecapi.review.product.list', 'GoodsController@review');
 
-    $app->post('ecapi.product.accessory.list', 'GoodsController@accessoryList');
+    $router->post('ecapi.review.product.subtotal', 'GoodsController@subtotal');
 
-    $app->post('ecapi.product.get', 'GoodsController@info');
+    $router->post('ecapi.recommend.product.list', 'GoodsController@recommendList');
 
-    $app->post('ecapi.auth.signin', 'UserController@signin');
+    $router->post('ecapi.product.accessory.list', 'GoodsController@accessoryList');
 
-    $app->post('ecapi.auth.social', 'UserController@auth');
+    $router->post('ecapi.product.get', 'GoodsController@info');
 
-    $app->post('ecapi.auth.default.signup', 'UserController@signupByEmail');
+    $router->post('ecapi.auth.signin', 'UserController@signin');
 
-    $app->post('ecapi.auth.mobile.signup', 'UserController@signupByMobile');
+    $router->post('ecapi.auth.social', 'UserController@auth');
 
-    $app->post('ecapi.user.profile.fields', 'UserController@fields');
+    $router->post('ecapi.auth.default.signup', 'UserController@signupByEmail');
 
-    $app->post('ecapi.auth.mobile.verify', 'UserController@verifyMobile');
+    $router->post('ecapi.auth.mobile.signup', 'UserController@signupByMobile');
 
-    $app->post('ecapi.auth.mobile.send', 'UserController@sendCode');
+    $router->post('ecapi.user.profile.fields', 'UserController@fields');
 
-    $app->post('ecapi.auth.mobile.reset', 'UserController@resetPasswordByMobile');
+    $router->post('ecapi.auth.mobile.verify', 'UserController@verifyMobile');
 
-    $app->post('ecapi.auth.default.reset', 'UserController@resetPasswordByEmail');
+    $router->post('ecapi.auth.mobile.send', 'UserController@sendCode');
 
-    $app->post('ecapi.cardpage.get', 'CardPageController@view');
+    $router->post('ecapi.auth.mobile.reset', 'UserController@resetPasswordByMobile');
 
-    $app->post('ecapi.cardpage.preview', 'CardPageController@preview');
+    $router->post('ecapi.auth.default.reset', 'UserController@resetPasswordByEmail');
 
-    $app->post('ecapi.config.get', 'ConfigController@index');
-    
-    $app->post('ecapi.config.wechat', 'ConfigController@wechat');
-    
-    $app->post('ecapi.config.affiliate', 'ConfigController@affiliateExpire');
+    $router->post('ecapi.cardpage.get', 'CardPageController@view');
 
-    $app->post('ecapi.config.share', 'ConfigController@share');
+    $router->post('ecapi.cardpage.preview', 'CardPageController@preview');
 
-    $app->post('ecapi.article.list', 'ArticleController@index');
+    $router->post('ecapi.config.get', 'ConfigController@index');
 
-    $app->post('ecapi.brand.list', 'BrandController@index');
+    $router->post('ecapi.config.wechat', 'ConfigController@wechat');
 
-    $app->post('ecapi.search.keyword.list', 'SearchController@index');
+    $router->post('ecapi.config.affiliate', 'ConfigController@affiliateExpire');
 
-    $app->post('ecapi.region.list', 'RegionController@index');
+    $router->post('ecapi.config.share', 'ConfigController@share');
 
-    $app->post('ecapi.invoice.type.list', 'InvoiceController@type');
+    $router->post('ecapi.article.list', 'ArticleController@index');
 
-    $app->post('ecapi.invoice.content.list', 'InvoiceController@content');
+    $router->post('ecapi.brand.list', 'BrandController@index');
 
-    $app->post('ecapi.invoice.status.get', 'InvoiceController@status');
+    $router->post('ecapi.search.keyword.list', 'SearchController@index');
 
-    $app->post('ecapi.notice.list', 'NoticeController@index');
+    $router->post('ecapi.region.list', 'RegionController@index');
 
-    $app->post('ecapi.banner.list', 'BannerController@index');
+    $router->post('ecapi.invoice.type.list', 'InvoiceController@type');
 
-    $app->post('ecapi.version.check', 'VersionController@check');
+    $router->post('ecapi.invoice.content.list', 'InvoiceController@content');
 
-    $app->post('ecapi.recommend.brand.list', 'BrandController@recommend');
+    $router->post('ecapi.invoice.status.get', 'InvoiceController@status');
 
-    $app->post('ecapi.message.system.list', 'MessageController@system');
+    $router->post('ecapi.notice.list', 'NoticeController@index');
 
-    $app->post('ecapi.message.count', 'MessageController@unread');
+    $router->post('ecapi.banner.list', 'BannerController@index');
 
-    $app->post('ecapi.site.get', 'SiteController@index');
+    $router->post('ecapi.version.check', 'VersionController@check');
 
-    $app->post('ecapi.splash.list', 'SplashController@index');
+    $router->post('ecapi.recommend.brand.list', 'BrandController@recommend');
 
-    $app->post('ecapi.splash.preview', 'SplashController@view');
+    $router->post('ecapi.message.system.list', 'MessageController@system');
 
-    $app->post('ecapi.theme.list', 'ThemeController@index');
+    $router->post('ecapi.message.count', 'MessageController@unread');
 
-    $app->post('ecapi.theme.preview', 'ThemeController@view');
+    $router->post('ecapi.site.get', 'SiteController@index');
 
-    $app->post('ecapi.search.category.list', 'GoodsController@categorySearch');
+    $router->post('ecapi.splash.list', 'SplashController@index');
 
-    $app->post('ecapi.order.reason.list', 'OrderController@reasonList');
+    $router->post('ecapi.splash.preview', 'SplashController@view');
 
-    $app->post('ecapi.search.shop.list', 'ShopController@search');
+    $router->post('ecapi.theme.list', 'ThemeController@index');
 
-    $app->post('ecapi.recommend.shop.list', 'ShopController@recommand');
+    $router->post('ecapi.theme.preview', 'ThemeController@view');
 
-    $app->post('ecapi.shop.list', 'ShopController@index');
+    $router->post('ecapi.search.category.list', 'GoodsController@categorySearch');
 
-    $app->post('ecapi.shop.get', 'ShopController@info');
+    $router->post('ecapi.order.reason.list', 'OrderController@reasonList');
 
-    $app->post('ecapi.areacode.list', 'AreaCodeController@index');
+    $router->post('ecapi.search.shop.list', 'ShopController@search');
+
+    $router->post('ecapi.recommend.shop.list', 'ShopController@recommand');
+
+    $router->post('ecapi.shop.list', 'ShopController@index');
+
+    $router->post('ecapi.shop.get', 'ShopController@info');
+
+    $router->post('ecapi.areacode.list', 'AreaCodeController@index');
 
     // 小程序二维码
-    $app->get('ecapi.wxa.qrcode', 'SiteController@wxQrcode');
+    $router->get('ecapi.wxa.qrcode', 'SiteController@wxQrcode');
 
-    $app->post('ecapi.site.configs', 'SiteController@configs');
+    $router->post('ecapi.site.configs', 'SiteController@configs');
 
     // 设备注册
-    $app->post('ecapi.auth.device.signup', 'UserController@signupByDevice');
+    $router->post('ecapi.auth.device.signup', 'UserController@signupByDevice');
 });
 
 //Authorization
-$app->group(['prefix' => 'v2', 'namespace' => 'App\Http\Controllers\v2', 'middleware' => ['token', 'xss']], function ($app) {
-    $app->post('ecapi.user.profile.get', 'UserController@profile');
+$router->group(['prefix' => 'v2', 'namespace' => 'App\Http\Controllers\v2', 'middleware' => ['token', 'xss']], function ($router) {
+    $router->post('ecapi.user.profile.get', 'UserController@profile');
 
-    $app->post('ecapi.user.profile.update', 'UserController@updateProfile');
+    $router->post('ecapi.user.profile.update', 'UserController@updateProfile');
 
-    $app->post('ecapi.user.password.update', 'UserController@updatePassword');
+    $router->post('ecapi.user.password.update', 'UserController@updatePassword');
 
-    $app->post('ecapi.order.list', 'OrderController@index');
+    $router->post('ecapi.order.list', 'OrderController@index');
 
-    $app->post('ecapi.order.get', 'OrderController@view');
+    $router->post('ecapi.order.get', 'OrderController@view');
 
-    $app->post('ecapi.order.confirm', 'OrderController@confirm');
+    $router->post('ecapi.order.confirm', 'OrderController@confirm');
 
-    $app->post('ecapi.order.cancel', 'OrderController@cancel');
+    $router->post('ecapi.order.cancel', 'OrderController@cancel');
 
-    $app->post('ecapi.order.price', 'OrderController@price');
+    $router->post('ecapi.order.price', 'OrderController@price');
 
-    $app->post('ecapi.product.like', 'GoodsController@setLike');
+    $router->post('ecapi.product.like', 'GoodsController@setLike');
 
-    $app->post('ecapi.product.unlike', 'GoodsController@setUnlike');
+    $router->post('ecapi.product.unlike', 'GoodsController@setUnlike');
 
-    $app->post('ecapi.product.liked.list', 'GoodsController@likedList');
+    $router->post('ecapi.product.liked.list', 'GoodsController@likedList');
 
-    $app->post('ecapi.order.review', 'OrderController@review');
+    $router->post('ecapi.order.review', 'OrderController@review');
 
-    $app->post('ecapi.order.subtotal', 'OrderController@subtotal');
+    $router->post('ecapi.order.subtotal', 'OrderController@subtotal');
 
-    $app->post('ecapi.payment.types.list', 'OrderController@paymentList');
+    $router->post('ecapi.payment.types.list', 'OrderController@paymentList');
 
-    $app->post('ecapi.payment.pay', 'OrderController@pay');
+    $router->post('ecapi.payment.pay', 'OrderController@pay');
 
-    $app->post('ecapi.shipping.vendor.list', 'ShippingController@index');
+    $router->post('ecapi.shipping.vendor.list', 'ShippingController@index');
 
-    $app->post('ecapi.shipping.status.get', 'ShippingController@info');
+    $router->post('ecapi.shipping.status.get', 'ShippingController@info');
 
-    $app->post('ecapi.consignee.list', 'ConsigneeController@index');
+    $router->post('ecapi.consignee.list', 'ConsigneeController@index');
 
-    $app->post('ecapi.consignee.update', 'ConsigneeController@modify');
+    $router->post('ecapi.consignee.update', 'ConsigneeController@modify');
 
-    $app->post('ecapi.consignee.add', 'ConsigneeController@add');
+    $router->post('ecapi.consignee.add', 'ConsigneeController@add');
 
-    $app->post('ecapi.consignee.delete', 'ConsigneeController@remove');
+    $router->post('ecapi.consignee.delete', 'ConsigneeController@remove');
 
-    $app->post('ecapi.consignee.setDefault', 'ConsigneeController@setDefault');
+    $router->post('ecapi.consignee.setDefault', 'ConsigneeController@setDefault');
 
-    $app->post('ecapi.score.get', 'ScoreController@view');
+    $router->post('ecapi.score.get', 'ScoreController@view');
 
-    $app->post('ecapi.score.history.list', 'ScoreController@history');
+    $router->post('ecapi.score.history.list', 'ScoreController@history');
 
-    $app->post('ecapi.cashgift.list', 'CashGiftController@index');
+    $router->post('ecapi.cashgift.list', 'CashGiftController@index');
 
-    $app->post('ecapi.cashgift.available', 'CashGiftController@available');
+    $router->post('ecapi.cashgift.available', 'CashGiftController@available');
 
-    $app->post('ecapi.cashgift.add', 'CashGiftController@add');
+    $router->post('ecapi.cashgift.add', 'CashGiftController@add');
 
-    $app->post('ecapi.push.update', 'MessageController@updateDeviceId');
+    $router->post('ecapi.push.update', 'MessageController@updateDeviceId');
     //cart
-    $app->post('ecapi.cart.add', 'CartController@add');
+    $router->post('ecapi.cart.add', 'CartController@add');
 
-    $app->post('ecapi.cart.clear', 'CartController@clear');
+    $router->post('ecapi.cart.clear', 'CartController@clear');
 
-    $app->post('ecapi.cart.delete', 'CartController@delete');
+    $router->post('ecapi.cart.delete', 'CartController@delete');
 
-    $app->post('ecapi.cart.get', 'CartController@index');
+    $router->post('ecapi.cart.get', 'CartController@index');
 
-    $app->post('ecapi.cart.quantity', 'CartController@quantity');
+    $router->post('ecapi.cart.quantity', 'CartController@quantity');
 
-    $app->post('ecapi.cart.update', 'CartController@update');
+    $router->post('ecapi.cart.update', 'CartController@update');
 
-    $app->post('ecapi.cart.checkout', 'CartController@checkout');
+    $router->post('ecapi.cart.checkout', 'CartController@checkout');
 
-    $app->post('ecapi.cart.promos', 'CartController@promos');
+    $router->post('ecapi.cart.promos', 'CartController@promos');
 
-    $app->post('ecapi.product.purchase', 'GoodsController@purchase');
+    $router->post('ecapi.product.purchase', 'GoodsController@purchase');
 
-    $app->post('ecapi.product.validate', 'GoodsController@checkProduct');
+    $router->post('ecapi.product.validate', 'GoodsController@checkProduct');
 
-    $app->post('ecapi.message.order.list', 'MessageController@order');
+    $router->post('ecapi.message.order.list', 'MessageController@order');
 
-    $app->post('ecapi.shop.watch', 'ShopController@watch');
+    $router->post('ecapi.shop.watch', 'ShopController@watch');
 
-    $app->post('ecapi.shop.unwatch', 'ShopController@unwatch');
+    $router->post('ecapi.shop.unwatch', 'ShopController@unwatch');
 
-    $app->post('ecapi.shop.watching.list', 'ShopController@watchingList');
+    $router->post('ecapi.shop.watching.list', 'ShopController@watchingList');
 
-    $app->post('ecapi.coupon.list', 'CouponController@index');
+    $router->post('ecapi.coupon.list', 'CouponController@index');
 
-    $app->post('ecapi.coupon.available', 'CouponController@available');
+    $router->post('ecapi.coupon.available', 'CouponController@available');
 
-    $app->post('ecapi.recommend.bonus.list', 'AffiliateController@index');
-    $app->post('ecapi.recommend.bonus.info', 'AffiliateController@info');
+    $router->post('ecapi.recommend.bonus.list', 'AffiliateController@index');
+    $router->post('ecapi.recommend.bonus.info', 'AffiliateController@info');
 
-    $app->post('ecapi.withdraw.submit', 'AccountController@submit');
-    $app->post('ecapi.withdraw.cancel', 'AccountController@cancel');
-    $app->post('ecapi.withdraw.list', 'AccountController@index');
-    $app->post('ecapi.withdraw.info', 'AccountController@getDetail');
+    $router->post('ecapi.withdraw.submit', 'AccountController@submit');
+    $router->post('ecapi.withdraw.cancel', 'AccountController@cancel');
+    $router->post('ecapi.withdraw.list', 'AccountController@index');
+    $router->post('ecapi.withdraw.info', 'AccountController@getDetail');
 
-    $app->post('ecapi.balance.get', 'AccountController@surplus');
-    $app->post('ecapi.balance.list', 'AccountController@accountDetail');
+    $router->post('ecapi.balance.get', 'AccountController@surplus');
+    $router->post('ecapi.balance.list', 'AccountController@accountDetail');
 });

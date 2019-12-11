@@ -5,8 +5,8 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": ">=5.5.9",
-        "laravel/lumen-framework": "5.4.*",
+        "php": ">=7.0",
+        "laravel/lumen-framework": "5.5.*",
         "vlucas/phpdotenv": "~2.2",
         "kamiorz/lumen-cors": "dev-master",
         "illuminate/mail": "^5.2",
