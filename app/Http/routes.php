@@ -139,11 +139,11 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.site.configs', 'SiteController@configs');
 
     // 设备注册
-    $router->post('ecapi.auth.device.signup', 'UserController@signupByDevice');
+    $router->post('ecapi.auth.signinByDevice', 'UserController@signinByDevice');
 });
 
 //Authorization
-$router->group(['prefix' => 'v2', 'namespace' => 'App\Http\Controllers\v2', 'middleware' => ['token', 'xss']], function ($router) {
+$router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token', 'xss']], function ($router) {
     $router->post('ecapi.user.profile.get', 'UserController@profile');
 
     $router->post('ecapi.user.profile.update', 'UserController@updateProfile');

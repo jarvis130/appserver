@@ -311,23 +311,20 @@ class UserController extends Controller
     }
 
     /**
-     * POST /user/signup-device
+     * POST /user/signin-device
      */
-    public function signupByDevice()
+    public function signinByDevice()
     {
         $rules = [
-            'device_id'     => 'string',
-            'username'      => 'required|min:3|max:25|alpha_num',
-            'email'         => 'required|email',
-            'password'      => 'required|min:6|max:20',
-            'invite_code'   => 'integer'
+            'device_id'  => 'required|string',
+            'os'     => 'required|string',
         ];
 
         if ($error = $this->validateInput($rules)) {
             return $error;
         }
 
-        $data = Member::createMember($this->validated);
+        $data = Member::signinByDevice($this->validated);
         return $this->json($data);
     }
 }

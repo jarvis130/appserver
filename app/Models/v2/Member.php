@@ -128,10 +128,6 @@ class Member extends BaseModel
                         }
                     }
                 }
-        
-                if (isset($device_id) && $device_id) {
-                    Device::toUpdateOrCreate($model->user_id, $attributes);
-                }
 
                 UserRegStatus::toUpdate($model->user_id, 0);
 
@@ -196,10 +192,6 @@ class Member extends BaseModel
                             $model->save();
                         }
                     }
-                }
-        
-                if (isset($device_id) && $device_id) {
-                    Device::toUpdateOrCreate($model->user_id, $attributes);
                 }
 
                 UserRegStatus::toUpdate($model->user_id, 0);
@@ -440,9 +432,7 @@ class Member extends BaseModel
         }
 
         Log::info('用户ID' . $user_id);
-        if (isset($device_id) && $device_id) {
-            Device::toUpdateOrCreate($user_id, $attributes);
-        }
+
         if (!isset($open_id)) {
             $open_id = '';
         }
@@ -1039,5 +1029,49 @@ class Member extends BaseModel
     public function getIsCompletedAttribute()
     {
         return UserRegStatus::IsCompleted($this->attributes['user_id']);
+    }
+
+    /**
+     * 使用移动设备码登录
+     * @param array $attributes
+     */
+    public static function signinByDevice(array $attributes){
+        extract($attributes);
+        $info = null;
+        $userDevice = UserDevice::where('device_id', $device_id)->first();
+        if($userDevice){
+            $userId = $userDevice['user_id'];
+            $model = Member::where('user_id', $userId)->first();
+        }else{
+            $username = self::genUsername('ecs');
+            $email = $username.'@qq.com';
+            $regtime = time();
+            $password = $regtime;
+            $data = [
+                'user_name' => $username,
+                'email' => $email,
+                'password' => self::setPassword($password),
+                'reg_time' => $regtime,
+                'user_rank' => 0,
+                'sex' => 0,
+                'alias' => $username,
+                'mobile_phone' => '',
+                'rank_points' => 0
+            ];
+
+            if ($model = self::create($data)) {
+                // 插入设备信息
+                if(! $userDeviceModel = UserDevice::createDevice($model->user_id, $device_id, $os, '')){
+                    return self::formatError(self::UNKNOWN_ERROR);
+                }
+            }else {
+                return self::formatError(self::UNKNOWN_ERROR);
+            }
+        }
+        $info = $model->toArray();
+        UserRegStatus::toUpdate($model->user_id, 1);
+        $token = Token::encode(['uid' => $model->user_id]);
+        UserRegStatus::toUpdate($model->user_id, 1);
+        return self::formatBody(['token' => $token, 'user' => $info]);
     }
 }
