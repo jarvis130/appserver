@@ -24,9 +24,9 @@ class UserRank extends BaseModel
     public static function findRankByUid($user_id)
     {
         $user = Member::where('user_id', $user_id)->first();
-        if ($user->user_rank == 0) {
-            return self::findByPoints($user->rank_points);
-        }
+//        if ($user->user_rank == 0) {
+//            return self::findByPoints($user->rank_points);
+//        }
         return self::where('rank_id', $user->user_rank)->first();
     }
 
