@@ -13,8 +13,8 @@ class UserRank extends BaseModel
     public $timestamps = false;
 
     protected $guarded = [];
-    protected $appends = ['name', 'desc', 'score_min', 'score_max'];
-    protected $visible = ['name', 'desc', 'score_min', 'score_max'];
+    protected $appends = ['id', 'name', 'desc', 'score_min', 'score_max'];
+    protected $visible = ['id', 'name', 'desc', 'score_min', 'score_max'];
 
     public static function findByPoints($points)
     {
@@ -27,7 +27,8 @@ class UserRank extends BaseModel
 //        if ($user->user_rank == 0) {
 //            return self::findByPoints($user->rank_points);
 //        }
-        return self::where('rank_id', $user->user_rank)->first();
+        $model = self::where('rank_id', $user->user_rank)->first();
+        return $model;
     }
 
     public static function getRankDiscountById($rank_id)
@@ -83,6 +84,11 @@ class UserRank extends BaseModel
             }
         }
         return $data;
+    }
+
+    public function getIdAttribute()
+    {
+        return $this->attributes['rank_id'];
     }
 
     public function getNameAttribute()
