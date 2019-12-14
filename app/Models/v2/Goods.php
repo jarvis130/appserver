@@ -72,7 +72,7 @@ class Goods extends BaseModel
         return self::formatBody([
             'hot_products'      => count(self::getRecommendGoods('is_hot', $category_id)) == 0 ? null : self::getRecommendGoods('is_hot', $category_id),
             'recently_products' => count(self::getRecommendGoods('is_new', $category_id)) == 0 ? null : self::getRecommendGoods('is_new', $category_id),
-            'good_products'     => count(self::getRecommendGoods('is_best', $category_id)) == 0 ? null : self::getRecommendGoods('is_best', $category_id),
+            'best_products'     => count(self::getRecommendGoods('is_best', $category_id)) == 0 ? null : self::getRecommendGoods('is_best', $category_id),
         ]);
     }
 
@@ -119,6 +119,14 @@ class Goods extends BaseModel
 
         if (isset($is_hot) && $is_hot && empty($is_exchange)) {
             $model->where('is_hot', $is_hot);
+        }
+
+        if (isset($is_new) && $is_new) {
+            $model->where('is_new', $is_new);
+        }
+
+        if (isset($is_best) && $is_best) {
+            $model->where('is_best', $is_best);
         }
 
         if (isset($keyword) && $keyword) {
