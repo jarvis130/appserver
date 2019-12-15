@@ -25,8 +25,8 @@ class BaseModel extends Model
     {
         return [
             'total' => $total,
-            'page' => $page,
-            'size' => $size,
+            'page' => $page * 1,
+            'size' => $size * 1,
             'more' => ($total > $page * $size) ? 1 : 0
         ];
     }
