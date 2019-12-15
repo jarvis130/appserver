@@ -46,6 +46,8 @@ class GoodsController extends Controller
             'shop'            => 'integer|min:1',
             'is_exchange'     => 'boolean',
             'is_hot'          => 'boolean',
+            'is_new'          => 'boolean',
+            'is_best'         => 'boolean',
             'keyword'         => 'string|min:1',
             'sort_key'        => 'string|min:1',
             'sort_value'      => 'required_with:sort_key|string|min:1',
