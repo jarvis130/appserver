@@ -242,4 +242,8 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
 
     $router->post('ecapi.balance.get', 'AccountController@surplus');
     $router->post('ecapi.balance.list', 'AccountController@accountDetail');
+
+    //关注用户
+    $router->post('ecapi.product.like', 'GoodsController@setLike');
+    $router->post('ecapi.product.unlike', 'GoodsController@setUnlike');
 });

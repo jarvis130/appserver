@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v2;
 
 use App\Http\Controllers\Controller;
+use App\Models\v2\UserAttention;
 use Illuminate\Http\Request;
 
 use App\Helper\Token;
@@ -325,6 +326,42 @@ class UserController extends Controller
         }
 
         $data = Member::signinByDevice($this->validated);
+        return $this->json($data);
+    }
+
+    /**
+     * POST /ecapi.user.setAttention
+     */
+    public function setAttention()
+    {
+        $rules = [
+            'att_user_id' => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = UserAttention::setAttention($this->validated);
+
+        return $this->json($data);
+    }
+
+    /**
+     * POST /ecapi.user.setUnattention
+     */
+    public function setUnattention()
+    {
+        $rules = [
+            '$att_user_id' => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = UserAttention::setUnattention($this->validated);
+
         return $this->json($data);
     }
 }
