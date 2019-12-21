@@ -99,7 +99,21 @@ class Goods extends BaseModel
         $prefix = DB::connection('shop')->getTablePrefix();
         $where  = ['is_delete' => 0, 'is_on_sale' => 1];
         //全站商品
-        $model = self::where($where);
+//        $model = self::where($where);
+
+        $model = self::select('goods.*');
+
+        if ((isset($attr_value1) && $attr_value1) || (isset($attr_value2) && $attr_value2)) {
+            $model = $model->leftjoin('goods_video_attr', 'goods_video_attr.goods_id', '=', 'goods.goods_id');
+            if(isset($attr_value1) && $attr_value1){
+                $model = $model->Where('goods_video_attr.attr_value1' , '=', $attr_value1);
+            }
+            if(isset($attr_value2) && $attr_value2){
+                $model = $model->Where('goods_video_attr.attr_value2' , '=', $attr_value2);
+            }
+        }
+
+        $model = $model->where($where);
 
         if (isset($is_exchange) && $is_exchange) {
             $exchange_model = ExchangeGoods::where('is_exchange', 1);
@@ -242,7 +256,7 @@ class Goods extends BaseModel
             $model->orderBy('sort_order', 'DESC');
         }
         $model->orderBy('goods_id', 'DESC');
-        $model->with('properties');
+        $model->with(['properties', 'propertie_info']);
 
         if (isset($per_page)) {
             $data = $model->paginate($per_page)->toArray();
@@ -473,6 +487,13 @@ class Goods extends BaseModel
     public function propertie_info()
     {
         return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')->groupBy('attr_id');
+    }
+
+    public function propertie_by_attrId()
+    {
+        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')
+            ->where('goods_attr.attr_value', "大陆")
+            ->groupBy('attr_id');
     }
 
     public function attachments()
