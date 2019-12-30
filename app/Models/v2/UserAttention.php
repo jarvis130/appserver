@@ -40,6 +40,7 @@ class UserAttention extends BaseModel
         return self::formatBody(['products' => $goods, 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
+    //关注
     public static function setAttention(array $attributes)
     {
         extract($attributes);
@@ -49,7 +50,7 @@ class UserAttention extends BaseModel
 
         //因为有网站和手机 所以可能$num大于1
         if ($num == 0) {
-            $model = new CollectGoods;
+            $model = new UserAttention();
             $model->user_id             = $uid;
             $model->att_user_id            = $att_user_id;
             $model->add_time            = time();
@@ -65,6 +66,7 @@ class UserAttention extends BaseModel
         }
     }
 
+    //取消关注
     public static function setUnattention(array $attributes)
     {
         extract($attributes);
@@ -83,6 +85,22 @@ class UserAttention extends BaseModel
         }
         if ($model->count() == 0) {
             return self::formatBody(['is_attention' =>false ]);
+        }
+    }
+
+    //关注信息
+    public static function getAttention(array $attributes)
+    {
+        extract($attributes);
+
+        $uid = Token::authorization();
+        $model = self::where(['user_id' => $uid, 'att_user_id' => $att_user_id]);
+        $num = $model->count();
+
+        if ($num == 0) {
+            return self::formatBody(['is_attention' => 0 ]);
+        }else{
+            return self::formatBody(['is_attention' => 1 ]);
         }
     }
 

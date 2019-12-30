@@ -353,7 +353,7 @@ class UserController extends Controller
     public function setUnattention()
     {
         $rules = [
-            '$att_user_id' => 'required|integer|min:1',
+            'att_user_id' => 'required|integer|min:1',
         ];
 
         if ($error = $this->validateInput($rules)) {
@@ -361,6 +361,24 @@ class UserController extends Controller
         }
 
         $data = UserAttention::setUnattention($this->validated);
+
+        return $this->json($data);
+    }
+
+    /**
+     * POST /ecapi.user.getAttention
+     */
+    public function getAttention()
+    {
+        $rules = [
+            '$att_user_id' => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = UserAttention::getAttention($this->validated);
 
         return $this->json($data);
     }

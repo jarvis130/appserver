@@ -140,6 +140,7 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
 
     // 设备注册
     $router->post('ecapi.auth.signinByDevice', 'UserController@signinByDevice');
+    $router->post('ecapi.attr.getVideoAttribute', 'AttributeController@getVideoAttribute');
 });
 
 //Authorization
@@ -244,6 +245,16 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.balance.list', 'AccountController@accountDetail');
 
     //关注用户
-    $router->post('ecapi.product.like', 'GoodsController@setLike');
-    $router->post('ecapi.product.unlike', 'GoodsController@setUnlike');
+    $router->post('ecapi.user.setAttention', 'UserController@setAttention');
+    $router->post('ecapi.user.setUnattention', 'UserController@setUnattention');
+    $router->post('ecapi.user.getAttention', 'UserController@getAttention');
+    //视频
+    $router->post('ecapi.video.get', 'VideoController@info');
+    $router->post('ecapi.home.video.list', 'VideoController@home');
+    $router->post('ecapi.video.list', 'VideoController@index');
+    $router->post('ecapi.video.addWatchLog', 'VideoController@addWatchLog');
+    $router->post('ecapi.video.checkWatchTimes', 'VideoController@checkWatchTimes');
+    $router->post('ecapi.video.like', 'VideoController@setLike');
+    $router->post('ecapi.video.unlike', 'VideoController@setUnlike');
+    $router->post('ecapi.video.liked.list', 'VideoController@likedList');
 });
