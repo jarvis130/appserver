@@ -4,7 +4,7 @@ namespace App\Models\v2;
 
 use App\Models\BaseModel;
 use App\Helper\Token;
-use \DB;
+use DB;
 use Log;
 use Cache;
 use Illuminate\Support\Facades\Mail;
@@ -236,6 +236,26 @@ class Member extends BaseModel
         if ($model = Member::where('user_id', $uid)->first()) {
             $user = $model->toArray();
             $user['is_affiliate'] = AffiliateLog::checkOpen();
+            //
+            $userRank = $user['rank']['id'];
+            $watchTimes = 0;
+            $watchedTimes = 0;//已经观看次数
+            if($userRank < 2){
+                //当天观看次数
+                $prefix = DB::connection('shop')->getTablePrefix();
+                $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where date_format('add_time','%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
+                $num = $result[0]->num;
+                $watchedTimes = $num;
+            }
+            if($userRank == 0){
+                $watchTimes = 5;
+            }elseif($userRank == 1){
+                $watchTimes = 10;
+            }else{
+                $watchTimes = '无限';
+            }
+            $user['watch_times'] = $watchTimes;
+            $user['watched_times'] = $watchedTimes;
             return self::formatBody(['user' => $user]);
         } else {
             return self::formatError(self::NOT_FOUND);
@@ -872,6 +892,10 @@ class Member extends BaseModel
     //        }
             $user['formated_user_money'] = Goods::price_format($user['user_money'], false);
             $user['formated_frozen_money'] = Goods::price_format($user['frozen_money'], false);
+
+            $videos = Video::where(['user_id'=>$user_id, 'is_real' => 2])->get();
+            $user['video_count'] = $videos->count();
+            $user['videos'] = $videos->toArray();
         }
 
         return $user;
@@ -996,8 +1020,12 @@ class Member extends BaseModel
 
     public function getAvatarAttribute()
     {
-        if ($avatar = Cache::get('avatar_' . $this->attributes['user_id'])) {
+        $avatar = Cache::get('avatar_' . $this->attributes['user_id']);
+        if ($avatar) {
             return formatPhoto($avatar);
+        }else{
+            $data = Avatar::where('user_id', $this->attributes['user_id'])->first();
+            return $data['avatar_url'];
         }
 
         return null;
@@ -1073,5 +1101,48 @@ class Member extends BaseModel
         $token = Token::encode(['uid' => $model->user_id]);
         UserRegStatus::toUpdate($model->user_id, 1);
         return self::formatBody(['token' => $token, 'user' => $info]);
+    }
+
+    /**
+     * 取得用户信息
+     * @param   int     $user_id    用户id
+     * @return  array   用户信息
+     */
+    public static function getUserInfoByUserId(array $attributes)
+    {
+        extract($attributes);
+        $user = self::where('user_id', $user_id)->first();
+        /* 格式化帐户余额 */
+        if ($user) {
+
+            $user['formated_user_money'] = Goods::price_format($user['user_money'], false);
+            $user['formated_frozen_money'] = Goods::price_format($user['frozen_money'], false);
+
+            //该用户是否被关注
+            $uid = Token::authorization();
+            $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $user_id])->count();
+            if($num == 1){
+                $user['is_attention'] = 1;
+            }else{
+                $user['is_attention'] = 0;
+            }
+
+            //该用户发布的视频
+//            $videos = array();
+//            $model = Video::where(['pub_id'=>$user_id, 'is_real' => 2]);
+//
+//            //paged
+//            $total = $model->count();
+//            $data = $model->paginate($per_page)->toArray();
+//
+//            //format
+//            $videos = [];
+//            foreach ($data['data'] as $key => $value) {
+//                $videos[$key] = $value;
+//            }
+
+        }
+
+        return self::formatBody(['user' => $user]);
     }
 }

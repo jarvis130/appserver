@@ -246,8 +246,9 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
 
     //关注用户
     $router->post('ecapi.user.setAttention', 'UserController@setAttention');
-    $router->post('ecapi.user.setUnattention', 'UserController@setUnattention');
     $router->post('ecapi.user.getAttention', 'UserController@getAttention');
+    $router->post('ecapi.user.attentioned.list', 'UserController@attentionedList');
+    $router->post('ecapi.user.getProfileByUserId', 'UserController@getProfileByUserId');
     //视频
     $router->post('ecapi.video.get', 'VideoController@info');
     $router->post('ecapi.home.video.list', 'VideoController@home');

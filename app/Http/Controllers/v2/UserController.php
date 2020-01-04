@@ -348,24 +348,6 @@ class UserController extends Controller
     }
 
     /**
-     * POST /ecapi.user.setUnattention
-     */
-    public function setUnattention()
-    {
-        $rules = [
-            'att_user_id' => 'required|integer|min:1',
-        ];
-
-        if ($error = $this->validateInput($rules)) {
-            return $error;
-        }
-
-        $data = UserAttention::setUnattention($this->validated);
-
-        return $this->json($data);
-    }
-
-    /**
      * POST /ecapi.user.getAttention
      */
     public function getAttention()
@@ -380,6 +362,40 @@ class UserController extends Controller
 
         $data = UserAttention::getAttention($this->validated);
 
+        return $this->json($data);
+    }
+
+    /**
+     * POST /ecapi.user.attentioned.list
+     */
+    public function attentionedList()
+    {
+        $rules = [
+            'page'            => 'required|integer|min:1',
+            'per_page'        => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = UserAttention::getList($this->validated);
+
+        return $this->json($data);
+    }
+
+    /**
+     * POST /user/getProfileByUserId
+     */
+    public function getProfileByUserId()
+    {
+        $rules = [
+            'user_id'            => 'required|integer|min:1',
+        ];
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+        $data = Member::getUserInfoByUserId($this->validated);
         return $this->json($data);
     }
 }

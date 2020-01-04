@@ -30,7 +30,7 @@ class Video extends BaseModel
     ];
 
     protected $visible = [
-        'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos', 'sku', 'name', 'price', 'is_exchange', 'exchange_score', 'current_price', 'discount', 'is_shipping', 'promos', 'stock', 'properties','propertie_info', 'sales_count', 'attachments', 'goods_desc', 'score', 'comments', 'good_stock', 'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at','is_real','is_on_sale','is_alone_sale','goods_number','market_price','integral','goods_name','goods_sn','extension_code', 'is_outer_vide_ourl', 'video_url', 'user_id'
+        'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos', 'sku', 'name', 'price', 'is_exchange', 'exchange_score', 'current_price', 'discount', 'is_shipping', 'promos', 'stock', 'properties','propertie_info', 'sales_count', 'attachments', 'goods_desc', 'score', 'comments', 'good_stock', 'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at','is_real','is_on_sale','is_alone_sale','goods_number','market_price','integral','goods_name','goods_sn','extension_code', 'is_outer_vide_ourl', 'video_url', 'pub_id'
     ];
 
     // protected $with = [];
@@ -132,6 +132,9 @@ class Video extends BaseModel
             }
         }
 
+        if (isset($pub_id) && $pub_id) {
+            $model->where('pub_id', $pub_id);
+        }
 
         if (isset($is_hot) && $is_hot && empty($is_exchange)) {
             $model->where('is_hot', $is_hot);
@@ -369,7 +372,7 @@ class Video extends BaseModel
             $count = CollectGoods::where('user_id', $uid)->count();
             $product_data['is_collect'] = $count;
 
-            $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $product_data['user_id']])->count();
+            $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $product_data['pub_id']])->count();
             if($num == 1){
                 $product_data['is_attention'] = 1;
             }else{

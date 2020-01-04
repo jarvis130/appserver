@@ -32,12 +32,12 @@ class UserAttention extends BaseModel
             ->toArray();
 
         //format
-        $goods = [];
+        $users = [];
         foreach ($data['data'] as $key => $value) {
-            $goods[$key] = $data['data'][$key]['goods'];
+            $users[$key] = $data['data'][$key]['member'];
         }
 
-        return self::formatBody(['products' => $goods, 'paged' => self::formatPaged($page, $per_page, $total)]);
+        return self::formatBody(['users' => $users, 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
     //关注
@@ -46,10 +46,10 @@ class UserAttention extends BaseModel
         extract($attributes);
 
         $uid = Token::authorization();
-        $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $att_user_id])->count();
+        $model = UserAttention::where(['user_id' => $uid, 'att_user_id' => $att_user_id]);
 
         //因为有网站和手机 所以可能$num大于1
-        if ($num == 0) {
+        if ($model->count() == 0) {
             $model = new UserAttention();
             $model->user_id             = $uid;
             $model->att_user_id            = $att_user_id;
@@ -61,29 +61,8 @@ class UserAttention extends BaseModel
             } else {
                 return self::formatError(self::UNKNOWN_ERROR);
             }
-        } elseif ($num >0) {
-            return self::formatBody(['is_attention' =>true ]);
-        }
-    }
-
-    //取消关注
-    public static function setUnattention(array $attributes)
-    {
-        extract($attributes);
-
-        $uid = Token::authorization();
-        $model = self::where(['user_id' => $uid, 'att_user_id' => $att_user_id]);
-        $num = $model->count();
-
-        if ($num == 1) {
+        } else {
             $model->delete();
-        } elseif ($num > 1) {
-            for ($i=0; $i < $num; $i++) {
-                $model = $model->first();
-                $model->delete();
-            }
-        }
-        if ($model->count() == 0) {
             return self::formatBody(['is_attention' =>false ]);
         }
     }
@@ -106,6 +85,6 @@ class UserAttention extends BaseModel
 
     public function member()
     {
-        return $this->hasOne('App\Models\v2\Member', 'user_id', 'concern_user_id');
+        return $this->hasOne('App\Models\v2\Member', 'user_id', 'att_user_id');
     }
 }
