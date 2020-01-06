@@ -42,71 +42,9 @@ class VideoWatchLog extends BaseModel
         return self::formatBody(['products' => $goods, 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
-    /**
-    * 获取当前用户收藏此商品状态
-    *
-    * @access public
-    * @param integer $goods_id
-    * @return integer
-    */
-    public static function getIsLiked($goods_id)
-    {
-        $uid = Token::authorization();
-        if ($model = self::where(['user_id' => $uid])->where(['goods_id' => $goods_id])->first()) {
-            return true;
-        }
-        return false;
-    }
-
-    public static function add(array $attributes)
-    {
-        extract($attributes);
-
-        $uid = Token::authorization();
-        $num = CollectGoods::where(['user_id' => $uid, 'video_id' => $video_id])->count();
-
-        //因为有网站和手机 所以可能$num大于1
-        if ($num == 0) {
-            $model = new CollectGoods;
-            $model->user_id             = $uid;
-            $model->goods_id            = $product;
-            $model->add_time            = time();
-            $model->is_attention        = 1;
-
-            if ($model->save()) {
-                return self::formatBody(['is_liked' =>true ]);
-            } else {
-                return self::formatError(self::UNKNOWN_ERROR);
-            }
-        } elseif ($num >0) {
-            return self::formatBody(['is_liked' =>true ]);
-        }
-    }
-
-    public static function setUnlike(array $attributes)
-    {
-        extract($attributes);
-
-        $uid = Token::authorization();
-        $model = self::where(['user_id' => $uid, 'goods_id' => $product]);
-        $num = $model->count();
-
-        if ($num == 1) {
-            $model->delete();
-        } elseif ($num > 1) {
-            for ($i=0; $i < $num; $i++) {
-                $model = $model->first();
-                $model->delete();
-            }
-        }
-        if ($model->count() == 0) {
-            return self::formatBody(['is_liked' =>false ]);
-        }
-    }
-
     public function goods()
     {
-        return $this->hasOne('App\Models\v2\Goods', 'goods_id', 'goods_id');
+        return $this->hasOne('App\Models\v2\Goods', 'goods_id', 'video_id');
     }
 
     public static function checkWatchTimes(array $attributes){

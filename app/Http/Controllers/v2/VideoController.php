@@ -380,4 +380,22 @@ class VideoController extends Controller
         return $this->json($data);
     }
 
+    /**
+     * POST /ecapi.video.getWatchLog
+     */
+    public function getWatchLog()
+    {
+        $rules = [
+            'page'     => 'required|integer|min:1',
+            'per_page' => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = VideoWatchLog::getList($this->validated);
+
+        return $this->json($data);
+    }
 }

@@ -258,4 +258,5 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.video.like', 'VideoController@setLike');
     $router->post('ecapi.video.unlike', 'VideoController@setUnlike');
     $router->post('ecapi.video.liked.list', 'VideoController@likedList');
+    $router->post('ecapi.video.getWatchLog', 'VideoController@getWatchLog');
 });

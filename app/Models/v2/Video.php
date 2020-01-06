@@ -78,7 +78,7 @@ class Video extends BaseModel
 
     public static function getRecommendGoods($type, $category_id = '')
     {
-        $model = self::where(['is_delete' => 0, 'is_on_sale' => 1, 'is_alone_sale' => 1]);
+        $model = self::where(['is_delete' => 0, 'is_on_sale' => 1, 'is_alone_sale' => 1, 'is_real' => 2]);
 
         if ($category_id && env('REFRESH_ECSHOP36_DATABASE')) {
             $model = $model->where('cat_id', $category_id);
