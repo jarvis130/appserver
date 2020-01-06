@@ -990,11 +990,19 @@ class Member extends BaseModel
 
     public function getRankAttribute()
     {
-        if ($model = UserRank::findRankByUid($this->user_id)) {
+        $model = UserRank::findRankByUid($this->attributes['user_id']);
+        if ($model) {
             return $model->toArray();
         } else {
             //如果没有等级　默认返回注册用户
-            return null;
+            $arr = array(
+                'id'=> 0,
+                'name'=> "注册用户",
+                'desc'=> "0",
+                'score_min'=> 0,
+                'score_max'=> 0,
+            );
+            return $arr;
         }
     }
 
