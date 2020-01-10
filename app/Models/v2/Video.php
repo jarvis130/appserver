@@ -366,6 +366,23 @@ class Video extends BaseModel
             }
         }
 
+        //关联视频
+        $row = LinkGoods::select('goods.*')
+            ->from('link_goods as lg')
+            ->leftJoin('goods as goods', 'goods.goods_id', '=', 'lg.link_goods_id')
+            ->where('lg.goods_id', $product)
+            ->get();
+
+        $linkModel = array();
+        foreach ($row AS $key => $val)
+        {
+            $linkModel[$key]['goods_id'] = $val['goods_id'];
+            $linkModel[$key]['goods_name'] = $val['goods_name'];
+            $linkModel[$key]['goods_thumb'] = formatPhoto($val['goods_thumb']);
+        }
+
+        $product_data['link_goods'] = $linkModel;
+
         //如果是视频，判断当前用户是否已经收藏该视频,同时判断发布者是否被关注
         if(!empty($product_data['is_real']) && ($product_data['is_real'] == '2')){
             $uid = Token::authorization();
@@ -1289,5 +1306,10 @@ class Video extends BaseModel
         } elseif ($num >0) {
             return self::formatBody(['is_watched' =>true ]);
         }
+    }
+
+    public function linkGoods()
+    {
+        return $this->belongsToMany('App\Models\v2\LinkGoods', 'link_goods');
     }
 }

@@ -141,6 +141,7 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     // 设备注册
     $router->post('ecapi.auth.signinByDevice', 'UserController@signinByDevice');
     $router->post('ecapi.attr.getVideoAttribute', 'AttributeController@getVideoAttribute');
+    $router->post('ecapi.video.get', 'VideoController@info');
 });
 
 //Authorization
@@ -250,7 +251,7 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.user.attentioned.list', 'UserController@attentionedList');
     $router->post('ecapi.user.getProfileByUserId', 'UserController@getProfileByUserId');
     //视频
-    $router->post('ecapi.video.get', 'VideoController@info');
+
     $router->post('ecapi.home.video.list', 'VideoController@home');
     $router->post('ecapi.video.list', 'VideoController@index');
     $router->post('ecapi.video.addWatchLog', 'VideoController@addWatchLog');
