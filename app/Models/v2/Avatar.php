@@ -10,4 +10,5 @@ class Avatar extends BaseModel
     protected $table      = 'avatar';
     public $timestamps = false;
     protected $guarded = [];
+
 }

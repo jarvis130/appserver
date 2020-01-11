@@ -13,9 +13,9 @@ class Comment extends BaseModel
     protected $table      = 'comment';
     public $timestamps = false;
 
-    protected $appends = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at'];
+    protected $appends = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at', 'avatar_url'];
 
-    protected $visible = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at'];
+    protected $visible = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at', 'avatar_url'];
 
     protected $primaryKey = 'comment_id';
 
@@ -24,6 +24,7 @@ class Comment extends BaseModel
 
     const GOODS = 0;
     const ARTICLE = 1;
+    const VIDEO = 2;
 
     const BAD     = 1;            // 差评
     const MEDIUM  = 2;            // 中评
@@ -57,7 +58,14 @@ class Comment extends BaseModel
     public static function getReview(array $attributes)
     {
         extract($attributes);
-        $model = self::where(['comment_type' => self::GOODS, 'id_value' => $product, 'status' => 1])->orderBy('add_time', 'DESC');
+//        $model = self::where(['id_value' => $product, 'status' => 1])->with('avatar')->orderBy('add_time', 'DESC');
+
+        $model = self::select('c.*', 'a.avatar_url')
+            ->from('comment as c')
+            ->leftJoin('avatar as a', 'a.user_id', '=', 'c.id_value')
+            ->where(['c.id_value' => $product, 'c.status' => 1])
+            ->orderBy('add_time', 'DESC');
+
         if (isset($grade) && is_numeric($grade)) {
             if ($grade == self::BAD) {
                 $model->where(function ($query) {
@@ -90,6 +98,11 @@ class Comment extends BaseModel
         }
         $_data = array_values($_data);
         return self::formatBody(['reviews' => $_data, 'paged' => self::formatPaged($page, $per_page, $total)]);
+    }
+
+    public function avatar()
+    {
+        return $this->hasOne('App\Models\v2\Avatar', "user_id", "user_id");
     }
 
     public static function getSubtotal(array $attributes)
@@ -143,6 +156,32 @@ class Comment extends BaseModel
         return false;
     }
 
+    public static function add(array $attributes)
+    {
+        extract($attributes);
+
+        $uid = Token::authorization();
+
+        if ($member = Member::where('user_id', $uid)->first()) {
+            return self::create([
+                'comment_type' => $comment_type,
+                'id_value' => $id_value,
+                'email' => $member->email,
+                //匿名时 用户名默认为ecshop
+                'user_name' => $member->user_name,
+                'content' => $content,
+                'comment_rank' => 0,
+                'add_time' => time(),
+                'ip_address' => app('request')->ip(),
+                'status' => $status,
+                'parent_id' => 0,
+                'user_id' => $uid,
+            ]);
+        }
+
+        return false;
+    }
+
     public function author()
     {
         return $this->belongsTo('App\Models\v2\Member', 'user_id', 'user_id');
@@ -172,6 +211,11 @@ class Comment extends BaseModel
     public function getContentAttribute()
     {
         return $this->attributes['content'];
+    }
+
+    public function getAvatarUrlAttribute()
+    {
+        return $this->attributes['avatar_url'];
     }
 
     public function getIsAnonymousAttribute()
