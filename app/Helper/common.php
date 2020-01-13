@@ -313,3 +313,33 @@ if (! function_exists('filterSpecialchar')) {
         return preg_replace($regex, "", $ostr);
     }
 }
+
+if (! function_exists('time_difference')) {
+    /* 时间差计算 */
+    function time_difference($time)
+    {
+        $cha = time() - $time;
+        $iz = floor($cha / 60);
+        $hz = floor($iz / 60);
+        $dz = floor($hz / 24);
+        /* 秒 */
+        $s = $cha % 60;
+        /* 分 */
+        $i = floor($iz % 60);
+        /* 时 */
+        $h = floor($hz / 24);
+        /* 天 */
+
+        if ($cha < 60) {
+            return $cha . '秒前';
+        } else if ($iz < 60) {
+            return $iz . '分钟前';
+        } else if ($hz < 24) {
+            return $hz . '小时前';
+        } else if ($dz < 30) {
+            return $dz . '天前';
+        } else {
+            return date("Y-m-d", $time);
+        }
+    }
+}
