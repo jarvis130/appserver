@@ -3,7 +3,6 @@
 namespace App\Models\v2;
 
 use App\Models\BaseModel;
-
 use App\Helper\Token;
 use DB;
 
@@ -234,7 +233,7 @@ class Comment extends BaseModel
 
     public function getCreatedatAttribute()
     {
-        return $this->attributes['add_time'];
+        return time_difference($this->attributes['add_time']);
     }
 
     public function getUpdatedatAttribute()

@@ -84,7 +84,7 @@ class Video extends BaseModel
             $model = $model->where('cat_id', $category_id);
         }
 
-        return $model->where($type, 1)->orderBy('sort_order')->orderBy('last_update', 'desc')->with('properties')->get();
+        return $model->where($type, 1)->orderBy('sort_order')->orderBy('last_update', 'desc')->with('properties')->limit(12)->get();
     }
 
     /**
