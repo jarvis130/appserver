@@ -383,8 +383,9 @@ class Video extends BaseModel
 
         $product_data['link_goods'] = $linkModel;
 
-        //如果是视频，判断当前用户是否已经收藏该视频,同时判断发布者是否被关注
+        //如果是视频
         if(!empty($product_data['is_real']) && ($product_data['is_real'] == '2')){
+            //判断当前用户是否已经收藏该视频,同时判断发布者是否被关注
             $uid = Token::authorization();
             $count = CollectGoods::where('user_id', $uid)->count();
             $product_data['is_collect'] = $count;
@@ -395,6 +396,24 @@ class Video extends BaseModel
             }else{
                 $product_data['is_attention'] = 0;
             }
+            //播放数量
+            $total = VideoWatchLog::where('video_id', $product)
+                ->groupby('video_id')
+                ->count();
+            $product_data['play_total'] = $total;    
+            //属性Breadcrumb
+            $v1='';$v2='';
+            $attrResult = GoodsAttr::where('goods_id', $product)
+                ->get();
+            foreach ($attrResult as $key => $attr){
+                if($attr['attr_id'] == 38){
+                    $v1 = $attr['attr_value'];
+                }
+                if($attr['attr_id'] == 45){
+                    $v2 = $attr['attr_value'];
+                }
+            }
+            $product_data['breadcrumb'] = $v1.' / '.$v2;
         }
         
         if (!$data) {
