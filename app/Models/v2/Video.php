@@ -1312,10 +1312,24 @@ class Video extends BaseModel
 
         //因为有网站和手机 所以可能$num大于1
         if ($num == 0) {
+            //属性Breadcrumb
+            $v1='';$v2='';
+            $attrResult = GoodsAttr::where('goods_id', $product)
+                ->get();
+            foreach ($attrResult as $key => $attr){
+                if($attr['attr_id'] == 38){
+                    $v1 = $attr['attr_value'];
+                }
+                if($attr['attr_id'] == 45){
+                    $v2 = $attr['attr_value'];
+                }
+            }
+
             $model = new VideoWatchLog;
             $model->user_id             = $uid;
             $model->video_id            = $video_id;
             $model->add_time            = time();
+            $model->breadcrumb = $v1.' / '.$v2;
 
             if ($model->save()) {
                 return self::formatBody(['is_watched' =>true ]);
@@ -1323,6 +1337,9 @@ class Video extends BaseModel
                 return self::formatError(self::UNKNOWN_ERROR);
             }
         } elseif ($num >0) {
+            VideoWatchLog::where(['user_id' => $uid, 'video_id' => $video_id])->update([
+                'add_time' => time()
+            ]);
             return self::formatBody(['is_watched' =>true ]);
         }
     }

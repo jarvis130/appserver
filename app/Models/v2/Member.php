@@ -466,9 +466,9 @@ class Member extends BaseModel
     {
         extract($validate);
 
-        if (!Sms::verifySmsCode($mobile, $code)) {
-            return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.code.verify_error'));
-        }
+        // if (!Sms::verifySmsCode($mobile, $code)) {
+        //     return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.code.verify_error'));
+        // }
 
         $uid = Token::authorization();
 
@@ -482,14 +482,14 @@ class Member extends BaseModel
             return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.bind'));
         }
         
-        $data = ['mobile_phone' => $mobile, 'user_name' => $mobile];
+        $data = ['mobile_phone' => $mobile, 'user_name' => $mobile, 'user_rank' => 1];
         if (isset($password)) {
             $data['password'] = self::setPassword($password);
         }
 
         self::where('user_id', $uid)->update($data);
 
-        return ['token' => Token::encode(['uid' => $uid]), 'user' => self::find($uid)];
+        return self::formatBody(['token' => Token::encode(['uid' => $uid]), 'user' => self::find($uid)]);
     }
 
     public static function webOauth(array $attributes)
