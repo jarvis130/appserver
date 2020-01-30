@@ -893,7 +893,7 @@ class Member extends BaseModel
             $user['formated_user_money'] = Goods::price_format($user['user_money'], false);
             $user['formated_frozen_money'] = Goods::price_format($user['frozen_money'], false);
 
-            $videos = Video::where(['user_id'=>$user_id, 'is_real' => 2])->get();
+            $videos = Video::where(['pub_id'=>$user_id, 'is_real' => 2])->get();
             $user['video_count'] = $videos->count();
             $user['videos'] = $videos->toArray();
         }

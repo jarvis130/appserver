@@ -145,4 +145,34 @@ class CartController extends Controller
 
         return $this->json($response);
     }
+
+    /**
+     * 创建视频订单
+     * @param  Request $request [description]
+     * @return [type]           [description]
+     */
+    public function createVideoOrder(Request $request)
+    {
+        $rules = [
+            "shop"             => "integer|min:1",          // 店铺ID
+            "consignee"        => "required|integer|min:1", // 收货人ID
+            "shipping"         => "required|integer|min:1", // 快递ID
+            "invoice_type"     => "string|min:1",           // 发票类型ID，如：公司、个人
+            "invoice_content"  => "string|min:1",           // 发票内容ID，如：办公用品、礼品
+            "invoice_title"    => "string|min:1",           // 发票抬头，如：xx科技有限公司
+            "invoice_number"   => "string|min:1",           // 发票 : 纳税人识别编号
+            "coupon"           => "string|min:1",          // 优惠券ID
+            "cashgift"         => "string|min:1",          // 红包ID
+            "comment"          => "string|min:1",           // 留言
+            "score"            => "integer",                // 积分
+            "cart_good_id"     => "required|json",         // 购物车商品id数组
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $response = Cart::createVideoOrder($this->validated);
+        return $this->json($response);
+    }
 }

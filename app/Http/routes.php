@@ -262,7 +262,8 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.video.unlike', 'VideoController@setUnlike');
     $router->post('ecapi.video.liked.list', 'VideoController@likedList');
     $router->post('ecapi.video.getWatchLog', 'VideoController@getWatchLog');
-
+    //订单
+    $router->post('ecapi.cart.createVideoOrder', 'CartController@createVideoOrder');
     // 评论
     $router->post('ecapi.comment.create', 'CommentController@create');
 });
