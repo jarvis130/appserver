@@ -5,6 +5,7 @@ namespace App\Models\v2;
 use App\Models\BaseModel;
 use App\Helper\Token;
 use DB;
+use Illuminate\Support\Facades\Storage;
 use Log;
 use Cache;
 use Illuminate\Support\Facades\Mail;
@@ -1033,7 +1034,8 @@ class Member extends BaseModel
             return formatPhoto($avatar);
         }else{
             $data = Avatar::where('user_id', $this->attributes['user_id'])->first();
-            return $data['avatar_url'];
+            $avatar = Storage::disk('avatar')->url($data['avatar']);
+            return $avatar;
         }
 
         return null;
@@ -1152,5 +1154,48 @@ class Member extends BaseModel
         }
 
         return self::formatBody(['user' => $user]);
+    }
+
+    //更新头像
+    public static function updateAvatar(array $attributes)
+    {
+        extract($attributes);
+
+        $uid = Token::authorization();
+
+        if ($file && $model = Member::where('user_id', $uid)->first()) {
+
+            $ext = $file->getClientOriginalExtension();//后缀
+            $path = $file->getRealPath();//路径
+            $filename = time().'.'.$ext;//重命名
+            Storage::disk('avatar')->put($filename, file_get_contents($path));//上传
+
+            if (isset($filename)) {
+                $avatar = Avatar::where('user_id', $uid)->first();
+                //删除旧文件
+                $oldAvatar = $avatar->avatar;
+                if($oldAvatar && Storage::disk('avatar')->exists($oldAvatar)){
+                    Storage::disk('avatar')->delete($oldAvatar);
+                }
+                //
+                if ($avatar) {
+                    $avatar->avatar = $filename;
+                    $avatar->save();
+                } else {
+                    $avatar = new Avatar;
+                    $avatar->user_id = $uid;
+                    $avatar->avatar = $filename;
+                    $avatar->save();
+                }
+            }
+
+            if ($model->save()) {
+                return self::formatBody(['user' => $model->toArray()]);
+            } else {
+                return self::formatError(self::UNKNOWN_ERROR);
+            }
+        } else {
+            return self::formatError(self::NOT_FOUND);
+        }
     }
 }

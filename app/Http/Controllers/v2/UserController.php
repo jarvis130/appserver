@@ -398,4 +398,21 @@ class UserController extends Controller
         $data = Member::getUserInfoByUserId($this->validated);
         return $this->json($data);
     }
+
+    /**
+     * POST /user/update-avatar
+     */
+    public function updateAvatar()
+    {
+        $rules = [
+            'file'    => 'file'
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = Member::updateAvatar($this->validated);
+        return $this->json($data);
+    }
 }

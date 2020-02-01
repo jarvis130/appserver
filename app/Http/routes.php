@@ -253,6 +253,7 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.user.attentioned.list', 'UserController@attentionedList');
     $router->post('ecapi.user.getProfileByUserId', 'UserController@getProfileByUserId');
     $router->post('ecapi.auth.mobile.binding', 'UserController@bindByMobile');
+    $router->post('ecapi.user.avatar.update', 'UserController@updateAvatar');
     //视频
     $router->post('ecapi.home.video.list', 'VideoController@home');
     $router->post('ecapi.video.list', 'VideoController@index');
