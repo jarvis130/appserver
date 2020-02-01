@@ -59,7 +59,7 @@ class Comment extends BaseModel
         extract($attributes);
 //        $model = self::where(['id_value' => $product, 'status' => 1])->with('avatar')->orderBy('add_time', 'DESC');
 
-        $model = self::select('c.*', 'a.avatar_url')
+        $model = self::select('c.*', 'a.avatar')
             ->from('comment as c')
             ->leftJoin('avatar as a', 'a.user_id', '=', 'c.id_value')
             ->where(['c.id_value' => $product, 'c.status' => 1])
@@ -214,7 +214,7 @@ class Comment extends BaseModel
 
     public function getAvatarUrlAttribute()
     {
-        return $this->attributes['avatar_url'];
+        return $this->attributes['avatar'];
     }
 
     public function getIsAnonymousAttribute()
