@@ -72,6 +72,13 @@ return [
             'bucket'    => 'douing',  //Bucket名字
             'notify_url'=> '',  //持久化处理回调地址
         ],
+
+        'avatar' => [
+            'driver' => 'local',
+            'root' => storage_path('app/avatar'),
+            'url' => env('APP_URL').'/avatar',
+            'visibility' => 'public',
+        ],
     ],
 
 ];
