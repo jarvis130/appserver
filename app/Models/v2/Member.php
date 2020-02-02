@@ -1080,6 +1080,8 @@ class Member extends BaseModel
         if($userDevice){
             $userId = $userDevice['user_id'];
             $model = Member::where('user_id', $userId)->first();
+
+
         }else{
             $username = self::genUsername('ecs');
             $email = $username.'@qq.com';
@@ -1107,6 +1109,27 @@ class Member extends BaseModel
             }
         }
         $info = $model->toArray();
+        //
+        $userRank = $info['rank']['id'];
+        $watchTimes = 0;
+        $watchedTimes = 0;//已经观看次数
+        if($userRank < 2){
+            //当天观看次数
+            $prefix = DB::connection('shop')->getTablePrefix();
+            $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where date_format('add_time','%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
+            $num = $result[0]->num;
+            $watchedTimes = $num;
+        }
+        if($userRank == 0){
+            $watchTimes = 5;
+        }elseif($userRank == 1){
+            $watchTimes = 10;
+        }else{
+            $watchTimes = '无限';
+        }
+        $info['watch_times'] = $watchTimes;
+        $info['watched_times'] = $watchedTimes;
+        //
         UserRegStatus::toUpdate($model->user_id, 1);
         $token = Token::encode(['uid' => $model->user_id]);
         UserRegStatus::toUpdate($model->user_id, 1);
@@ -1173,9 +1196,11 @@ class Member extends BaseModel
             if (isset($filename)) {
                 $avatar = Avatar::where('user_id', $uid)->first();
                 //删除旧文件
-                $oldAvatar = $avatar->avatar;
-                if($oldAvatar && Storage::disk('avatar')->exists($oldAvatar)){
-                    Storage::disk('avatar')->delete($oldAvatar);
+                if($avatar){
+                    $oldAvatar = $avatar->avatar;
+                    if($oldAvatar && Storage::disk('avatar')->exists($oldAvatar)){
+                        Storage::disk('avatar')->delete($oldAvatar);
+                    }
                 }
                 //
                 if ($avatar) {
@@ -1198,4 +1223,5 @@ class Member extends BaseModel
             return self::formatError(self::NOT_FOUND);
         }
     }
+
 }

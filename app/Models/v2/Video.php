@@ -1314,7 +1314,7 @@ class Video extends BaseModel
         if ($num == 0) {
             //属性Breadcrumb
             $v1='';$v2='';
-            $attrResult = GoodsAttr::where('goods_id', $product)
+            $attrResult = GoodsAttr::where('goods_id', $video_id)
                 ->get();
             foreach ($attrResult as $key => $attr){
                 if($attr['attr_id'] == 38){
