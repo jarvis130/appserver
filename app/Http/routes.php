@@ -144,6 +144,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.video.get', 'VideoController@info');
     // 评论
     $router->post('ecapi.comment.list', 'CommentController@index');
+    // 客服联系设置
+    $router->post('ecapi.kefu.setting.get', 'KefuSettingsController@index');
 });
 
 //Authorization
