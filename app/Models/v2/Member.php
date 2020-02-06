@@ -1034,7 +1034,12 @@ class Member extends BaseModel
             return formatPhoto($avatar);
         }else{
             $data = Avatar::where('user_id', $this->attributes['user_id'])->first();
-            $avatar = Storage::disk('avatar')->url($data['avatar']);
+            if($data['avatar']){
+                $avatar = Storage::disk('avatar')->url($data['avatar']);
+            }else{
+                $avatar = null;
+            }
+
             return $avatar;
         }
 
@@ -1080,8 +1085,6 @@ class Member extends BaseModel
         if($userDevice){
             $userId = $userDevice['user_id'];
             $model = Member::where('user_id', $userId)->first();
-
-
         }else{
             $username = self::genUsername('ecs');
             $email = $username.'@qq.com';
@@ -1100,9 +1103,30 @@ class Member extends BaseModel
             ];
 
             if ($model = self::create($data)) {
+                $userId = $model->user_id;
                 // 插入设备信息
-                if(! $userDeviceModel = UserDevice::createDevice($model->user_id, $device_id, $os, '')){
+                if(! $userDeviceModel = UserDevice::createDevice($userId, $device_id, $os, $ip,'')){
                     return self::formatError(self::UNKNOWN_ERROR);
+                }
+                // 根据IP地址判断该用户是否有上级
+                $ip = '';
+                $downloadModel = Download::where(['ip'=>$ip, 'status' => '0']);
+                if($downloadModel->count() > 0){
+                    $parenId = $downloadModel->user_id;
+                    $relationNum = UserRelation::where(['user_id' =>$userId, 'parent_id'=>$parenId])->count();
+                    if($relationNum == 0){
+                        $data = array(
+                            'user_id' => $userId,
+                            'parent_id'=>$parenId,
+                            'create_time'=>time()
+                        );
+
+                        if (UserRelation::create($data)) {
+                            return self::formatError(self::UNKNOWN_ERROR);
+                        }
+                        //更新状态
+                        Download::where('id', $downloadModel->id)->update(['status'=>1]);
+                    }
                 }
             }else {
                 return self::formatError(self::UNKNOWN_ERROR);

@@ -146,6 +146,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.comment.list', 'CommentController@index');
     // 客服联系设置
     $router->post('ecapi.kefu.setting.get', 'KefuSettingsController@index');
+    // 保存用户下载信息
+    $router->post('ecapi.share.download.insert', 'DownloadController@insertData');
 });
 
 //Authorization

@@ -36,12 +36,13 @@ class UserDevice extends BaseModel
         return $this->attributes['remark'];
     }
 
-    public static function createDevice($user_id, $device_id, $os, $remark)
+    public static function createDevice($user_id, $device_id, $os, $ip, $remark)
     {
         $data = [
             'device_id' => $device_id,
             'os' => $os,
             'user_id' => $user_id,
+            'ip' => $ip,
             'remark' => $remark
         ];
 

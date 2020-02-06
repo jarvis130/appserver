@@ -319,6 +319,7 @@ class UserController extends Controller
         $rules = [
             'device_id'  => 'required|string',
             'os'     => 'required|string',
+            'ip'     => 'required|string',
         ];
 
         if ($error = $this->validateInput($rules)) {
