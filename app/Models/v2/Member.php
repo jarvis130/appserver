@@ -1113,19 +1113,24 @@ class Member extends BaseModel
                 $downloadModel = Download::where(['ip'=>$ip, 'status' => '0']);
                 if($downloadModel->count() > 0){
                     $parenId = $downloadModel->user_id;
-                    $relationNum = UserRelation::where(['user_id' =>$userId, 'parent_id'=>$parenId])->count();
-                    if($relationNum == 0){
-                        $data = array(
-                            'user_id' => $userId,
-                            'parent_id'=>$parenId,
-                            'create_time'=>time()
-                        );
+                    if($userId != $parenId){
+                        $relationNum = UserRelation::where(['user_id' =>$userId, 'parent_id'=>$parenId])->count();
+                        if($relationNum == 0){
+                            $data = array(
+                                'user_id' => $userId,
+                                'parent_id'=>$parenId,
+                                'create_time'=>time()
+                            );
 
-                        if (UserRelation::create($data)) {
-                            return self::formatError(self::UNKNOWN_ERROR);
+                            if (UserRelation::create($data)) {
+                                return self::formatError(self::UNKNOWN_ERROR);
+                            }
+                            //更新状态
+                            Download::where('id', $downloadModel->id)->update(['status'=>1]);
                         }
-                        //更新状态
-                        Download::where('id', $downloadModel->id)->update(['status'=>1]);
+                    }else{
+                        // 删除分享者自己打开自己分享链接产生的数据
+                        Download::where(['ip'=>$ip, 'status' => '0', 'user_id' => $userId])->delete();
                     }
                 }
             }else {
