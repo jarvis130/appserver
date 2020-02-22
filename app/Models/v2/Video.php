@@ -26,13 +26,14 @@ class Video extends BaseModel
 
     protected $appends = [
         'id', 'category', 'brand', 'shop', 'sku', 'default_photo', 'photos', 'name', 'price', 'current_price', 'discount', 'is_exchange', 'exchange_score', 'sales_count', 'score', 'good_stock',
-        'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at', 'promos'
+        'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at', 'promos', 'goods_grade'
     ];
 
     protected $visible = [
         'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos', 'sku', 'name', 'price', 'is_exchange', 'exchange_score', 'current_price', 'discount', 'is_shipping', 'promos',
         'stock', 'properties','propertie_info', 'sales_count', 'attachments', 'goods_desc', 'score', 'comments', 'good_stock', 'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url',
-        'created_at', 'updated_at','is_real','is_on_sale','is_alone_sale','goods_number','market_price','integral','goods_name','goods_sn','extension_code', 'is_outer_vide_ourl', 'video_url', 'pub_id',  'goods_brief'
+        'created_at', 'updated_at','is_real','is_on_sale','is_alone_sale','goods_number','market_price','integral','goods_name','goods_sn','extension_code', 'is_outer_vide_ourl', 'video_url', 'pub_id',  'goods_brief',
+        'goods_grade'
     ];
 
     // protected $with = [];
@@ -86,7 +87,10 @@ class Video extends BaseModel
             $model = $model->where('cat_id', $category_id);
         }
 
-        return $model->where($type, 1)->orderBy('sort_order')->orderBy('last_update', 'desc')->with('properties')->limit(12)->get();
+        $model = $model->where($type, 1)->orderBy('sort_order')->orderBy('last_update', 'desc')->with(['properties'])->limit(12)->get();
+        $data = $model->toArray();
+
+        return $data;
     }
 
     /**
@@ -267,6 +271,17 @@ class Video extends BaseModel
 
         if (isset($per_page)) {
             $data = $model->paginate($per_page)->toArray();
+            //判断当前用户是否已经收藏该视频
+//            $uid = Token::authorization();
+//            $collectGoods = CollectGoods::where('user_id', $uid)->get();
+//            foreach($data['data'] as $key => $goods){
+//                $data['data'][$key]['is_collect'] = 0;
+//                foreach ($collectGoods as $k => $collect){
+//                    if($goods['id'] == $collect['goods_id']){
+//                        $data['data'][$key]['is_collect'] = 1;
+//                    }
+//                }
+//            }
             return self::formatBody(['products' => $data['data'], 'paged' => self::formatPaged($page, $per_page, $total)]);
         } else {
             $data = $model->get()->toArray();
@@ -387,11 +402,11 @@ class Video extends BaseModel
 
         //如果是视频
         if(!empty($product_data['is_real']) && ($product_data['is_real'] == '2')){
-            //判断当前用户是否已经收藏该视频,同时判断发布者是否被关注
+            //判断当前用户是否已经收藏该视频
             $uid = Token::authorization();
             $count = CollectGoods::where('user_id', $uid)->count();
             $product_data['is_collect'] = $count;
-
+            //判断发布者是否被关注
             $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $product_data['pub_id']])->count();
             if($num == 1){
                 $product_data['is_attention'] = 1;
@@ -657,6 +672,15 @@ class Video extends BaseModel
     public function getIslikedAttribute()
     {
         return CollectGoods::getIsLiked($this->goods_id) ? 1 : 0;
+    }
+
+    public function getGoodsGradeAttribute(){
+        $goodsGrade = Comment::getGradeByGoodsId($this->goods_id);
+        if($goodsGrade == null){
+            return 0;
+        }else{
+            return $goodsGrade;
+        }
     }
 
     public function getSalescountAttribute()

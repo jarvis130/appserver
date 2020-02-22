@@ -169,7 +169,7 @@ class Comment extends BaseModel
                 //匿名时 用户名默认为ecshop
                 'user_name' => $member->user_name,
                 'content' => $content,
-                'comment_rank' => 0,
+                'comment_rank' => $comment_rank,
                 'add_time' => time(),
                 'ip_address' => app('request')->ip(),
                 'status' => $status,
@@ -179,6 +179,45 @@ class Comment extends BaseModel
         }
 
         return false;
+    }
+
+    public static function addRate(array $attributes)
+    {
+        extract($attributes);
+
+        $uid = Token::authorization();
+
+        if ($member = Member::where('user_id', $uid)->first()) {
+            return self::create([
+                'comment_type' => $comment_type,
+                'id_value' => $id_value,
+                'email' => $member->email,
+                //匿名时 用户名默认为ecshop
+                'user_name' => $member->user_name,
+                'content' => $content,
+                'comment_rank' => $comment_rank,
+                'add_time' => time(),
+                'ip_address' => app('request')->ip(),
+                'status' => $status,
+                'parent_id' => 0,
+                'user_id' => $uid,
+            ]);
+        }
+
+        return false;
+    }
+
+    public static function getGradeByGoodsId($goodsId){
+//        $data = DB::select('select sum(comment_rank) / count(1) as rate, id_value from ecs_comment where id_value = ? and comment_type = 1 GROUP BY id_value', $goodsId);
+//        return $data;
+
+        $data =  self::select(DB::raw('sum(comment_rank) / count(1) as rate'))
+            ->where('id_value', $goodsId)
+            ->where('comment_type', 1)
+            ->groupBy('id_value')
+            ->value('rate');
+
+        return intval($data);
     }
 
     public function author()
@@ -214,7 +253,7 @@ class Comment extends BaseModel
 
     public function getAvatarUrlAttribute()
     {
-        return $this->attributes['avatar'];
+        return empty($this->attributes['avatar']) ? null : $this->attributes['avatar'];
     }
 
     public function getIsAnonymousAttribute()

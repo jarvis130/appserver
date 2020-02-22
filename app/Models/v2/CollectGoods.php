@@ -24,17 +24,16 @@ class CollectGoods extends BaseModel
         extract($attributes);
 
         $uid = Token::authorization();
-        $model = self::where(['user_id' => $uid])->with('goods')->orderBy('add_time', 'DESC');
+        $model = self::where(['user_id' => $uid])->with('video')->orderBy('add_time', 'DESC');
 
         //paged
         $total = $model->count();
-        $data = $model->paginate($per_page)
-            ->toArray();
+        $data = $model->paginate($per_page)->toArray();
 
         //format
         $goods = [];
         foreach ($data['data'] as $key => $value) {
-            $goods[$key] = $data['data'][$key]['goods'];
+            $goods[$key] = $value['video'];
         }
 
         return self::formatBody(['products' => $goods, 'paged' => self::formatPaged($page, $per_page, $total)]);
@@ -105,5 +104,10 @@ class CollectGoods extends BaseModel
     public function goods()
     {
         return $this->hasOne('App\Models\v2\Goods', 'goods_id', 'goods_id');
+    }
+
+    public function video()
+    {
+        return $this->hasOne('App\Models\v2\Video', 'goods_id', 'goods_id');
     }
 }

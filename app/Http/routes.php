@@ -148,6 +148,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.kefu.setting.get', 'KefuSettingsController@index');
     // 保存用户下载信息
     $router->post('ecapi.share.download.insert', 'DownloadController@insertData');
+    //
+    $router->get('ecapi.version.app.check', 'VersionController@checkApp');
 });
 
 //Authorization
@@ -271,4 +273,5 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.cart.createVideoOrder', 'CartController@createVideoOrder');
     // 评论
     $router->post('ecapi.comment.create', 'CommentController@create');
+    $router->post('ecapi.comment.createRate', 'CommentController@createRate');
 });
