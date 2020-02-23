@@ -274,4 +274,10 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     // 评论
     $router->post('ecapi.comment.create', 'CommentController@create');
     $router->post('ecapi.comment.createRate', 'CommentController@createRate');
+    // 演员
+    $router->post('ecapi.actor.getvideolistbyactorid', 'ActorController@getVideoListByActorId');
+    //关注演员
+    $router->post('ecapi.actor.setAttention', 'ActorController@setAttention');
+    $router->post('ecapi.actor.getAttention', 'ActorController@getAttention');
+    $router->post('ecapi.actor.attentioned.list', 'ActorController@attentionedList');
 });

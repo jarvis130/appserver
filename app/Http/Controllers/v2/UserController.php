@@ -354,7 +354,7 @@ class UserController extends Controller
     public function getAttention()
     {
         $rules = [
-            '$att_user_id' => 'required|integer|min:1',
+            'att_user_id' => 'required|integer|min:1',
         ];
 
         if ($error = $this->validateInput($rules)) {

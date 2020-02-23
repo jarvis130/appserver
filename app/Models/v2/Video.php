@@ -33,7 +33,7 @@ class Video extends BaseModel
         'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos', 'sku', 'name', 'price', 'is_exchange', 'exchange_score', 'current_price', 'discount', 'is_shipping', 'promos',
         'stock', 'properties','propertie_info', 'sales_count', 'attachments', 'goods_desc', 'score', 'comments', 'good_stock', 'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url',
         'created_at', 'updated_at','is_real','is_on_sale','is_alone_sale','goods_number','market_price','integral','goods_name','goods_sn','extension_code', 'is_outer_vide_ourl', 'video_url', 'pub_id',  'goods_brief',
-        'goods_grade'
+        'goods_grade', 'actors'
     ];
 
     // protected $with = [];
@@ -47,6 +47,233 @@ class Video extends BaseModel
 
     const ASC  = 1;
     const DESC = 2;
+
+    public function getIdAttribute()
+    {
+        return $this->goods_id;
+    }
+
+    public function getCategoryAttribute()
+    {
+        return $this->cat_id;
+    }
+
+    public function getGoodsDescAttribute()
+    {
+        $pattern = '/(https?|ftp|mms)?:\/\/([A-z0-9]+[_\-]?[A-z0-9]+\.)*[A-z0-9]+\-?[A-z0-9]+\.[A-z]{2,}(\/.*)*\/?(\/images\/upload\/)/';
+        if (!preg_match($pattern, $this->attributes['goods_desc'])) {
+            return str_replace('/images/upload', config('app.shop_url') . '/images/upload', $this->attributes['goods_desc']);
+        }
+        return null;
+    }
+
+    public function getScoreAttribute()
+    {
+        $scale = ShopConfig::findByCode('integral_scale');
+        if ($scale > 0) {
+            return $this->integral / ($scale / 100);
+        }
+        return 0;
+    }
+
+    public function getBrandAttribute()
+    {
+        return $this->brand_id;
+    }
+
+    public function getShopAttribute()
+    {
+        $data = [];
+        // $data['name'] = ShopConfig::findByCode('shop_name');
+        $data['id'] = 1;
+        return $data['id'];
+    }
+
+    public function getPromosAttribute()
+    {
+        $user_agent = Header::getUserAgent();
+        Log::debug("平台记录".json_encode($user_agent));
+        if ($user_agent == array('Platform' => 'Wechat')) {
+            $data = array();
+            return $data;
+        }
+
+        return FavourableActivity::getPromoByGoods($this->goods_id, $this->category, $this->brand, true);
+    }
+
+    public function getExchangeScoreAttribute()
+    {
+        $exchangegoodsobj = ExchangeGoods::where('goods_id', $this->attributes['goods_id'])
+            ->where('is_exchange', 1)
+            ->first();
+        if ($exchangegoodsobj) {
+            return $exchangegoodsobj->exchange_integral;
+        }
+        return 0;
+    }
+
+    public function getIsExchangeAttribute()
+    {
+        $exchangegoodsobj = ExchangeGoods::where('goods_id', $this->attributes['goods_id'])->first();
+        return !empty($exchangegoodsobj->is_exchange);
+    }
+
+    public function getIsOuterVideOurlAttribute()
+    {
+        return $this->is_outer_vider_url;
+    }
+
+    public function getVideourlAttribute()
+    {
+        return $this->video_url;
+    }
+
+    public function getGoodsbriefAttribute()
+    {
+        return $this->goods_brief;
+    }
+
+    public function getSkuAttribute()
+    {
+        return $this->goods_sn;
+    }
+
+    public function getNameAttribute()
+    {
+        return $this->goods_name;
+    }
+
+    public function getGoodstockAttribute()
+    {
+        return $this->goods_number;
+    }
+
+    public function getPriceAttribute()
+    {
+        return $this->market_price;
+    }
+
+    public function getCurrentpriceAttribute()
+    {
+        $promote_price = self::bargain_price($this->promote_price, $this->promote_start_date, $this->promote_end_date);
+        if (!empty($promote_price)) {
+            return self::price_format($promote_price, false);
+        }
+
+        $user_price = UserRank::getMemberRankPriceByGid($this->goods_id);
+
+        if (!empty($user_price)) {
+            return self::price_format($user_price, false);
+        }
+
+        $current_price = UserRank::getMemberRankPriceByGid($this->goods_id);
+
+        return self::price_format($current_price, false);
+    }
+
+    public function getDiscountAttribute()
+    {
+        $price = self::bargain_price($this->promote_price, $this->promote_start_date, $this->promote_end_date);
+        if ($price > 0) {
+            return [
+                "price"    => $price,                                  // 促销价格
+                "start_at" => $this->promote_start_date,               // 开始时间
+                "end_at"   => $this->promote_end_date,                 // 结束时间
+            ];
+        } else {
+            return null;
+        }
+    }
+
+    public function getShareUrlAttribute()
+    {
+        $uid = Token::authorization();
+
+        $shareUrl = config('app.shop_h5');
+        $endUrl   = substr($shareUrl, -1);
+
+        if (strcmp($endUrl, '/') != 0) {
+            $shareUrl = $shareUrl . '/';
+        }
+
+        if ($uid) {
+            return $shareUrl . '?u=' . $uid . '#/product?id=' . $this->goods_id;
+        }
+
+        return $shareUrl . '#/product?id=' . $this->goods_id;
+    }
+
+    public function getIslikedAttribute()
+    {
+        return CollectGoods::getIsLiked($this->goods_id) ? 1 : 0;
+    }
+
+    public function getGoodsGradeAttribute(){
+        $goodsGrade = Comment::getGradeByGoodsId($this->goods_id);
+        if($goodsGrade == null){
+            return 0;
+        }else{
+            return $goodsGrade;
+        }
+    }
+
+    public function getSalescountAttribute()
+    {
+        return OrderGoods::getSalesCountById($this->goods_id) + $this->virtual_sales;
+    }
+
+    public function getCommentcountAttribute()
+    {
+        return Comment::getCommentCountById($this->goods_id);
+    }
+
+    public function getPhotosAttribute()
+    {
+        //        $goods =  Goods::where('goods_id', $this->goods_id)->first();
+//
+//        $goods_images = formatPhoto($goods->goods_img, $goods->goods_thumb);
+//
+//        $arr = GoodsGallery::getPhotosById($this->goods_id);
+//
+//        if (!empty($goods_images)) {
+//            array_unshift($arr, $goods_images);
+//        }
+//
+//        if (empty($arr)) {
+//            return null;
+//        }
+//
+//        return $arr;
+        return GoodsGallery::getPhotosById($this->goods_id);
+    }
+
+    public function getDefaultPhotoAttribute()
+    {
+        return formatPhoto($this->goods_img);
+    }
+
+    public function getReviewrateAttribute()
+    {
+        return Comment::getCommentRateById($this->goods_id) . '%';
+    }
+
+    public function getIntrourlAttribute()
+    {
+        if (empty($this->goods_desc)) {
+            return null;
+        }
+        return url('/v2/product.intro.' . $this->goods_id);
+    }
+
+    public function getCreatedatAttribute()
+    {
+        return $this->add_time;
+    }
+
+    public function getUpdatedatAttribute()
+    {
+        return $this->last_update;
+    }
 
     public static function findAll(array $attributes)
     {
@@ -271,17 +498,6 @@ class Video extends BaseModel
 
         if (isset($per_page)) {
             $data = $model->paginate($per_page)->toArray();
-            //判断当前用户是否已经收藏该视频
-//            $uid = Token::authorization();
-//            $collectGoods = CollectGoods::where('user_id', $uid)->get();
-//            foreach($data['data'] as $key => $goods){
-//                $data['data'][$key]['is_collect'] = 0;
-//                foreach ($collectGoods as $k => $collect){
-//                    if($goods['id'] == $collect['goods_id']){
-//                        $data['data'][$key]['is_collect'] = 1;
-//                    }
-//                }
-//            }
             return self::formatBody(['products' => $data['data'], 'paged' => self::formatPaged($page, $per_page, $total)]);
         } else {
             $data = $model->get()->toArray();
@@ -359,7 +575,7 @@ class Video extends BaseModel
 
         $model = Video::where(['is_delete' => 0, 'goods_id' => $product]);
 
-        $data = $model->with(['properties','propertie_info', 'tags', 'stock', 'attachments'])->first();
+        $data = $model->with(['properties','propertie_info', 'tags', 'stock', 'attachments', 'actors'])->first();
         //保证属性排序正确
         $product_data = $data->toArray();
 
@@ -469,276 +685,6 @@ class Video extends BaseModel
             $shop    = ShopConfig::getSiteInfo();
             return view('goods.share', ['goods' => $model->toArray(), 'reviews' => $reviews->toArray(), 'shop' => $shop]);
         }
-    }
-
-    public function getIdAttribute()
-    {
-        return $this->goods_id;
-    }
-
-    public function getCategoryAttribute()
-    {
-        return $this->cat_id;
-    }
-
-    public function getGoodsDescAttribute()
-    {
-        $pattern = '/(https?|ftp|mms)?:\/\/([A-z0-9]+[_\-]?[A-z0-9]+\.)*[A-z0-9]+\-?[A-z0-9]+\.[A-z]{2,}(\/.*)*\/?(\/images\/upload\/)/';
-        if (!preg_match($pattern, $this->attributes['goods_desc'])) {
-            return str_replace('/images/upload', config('app.shop_url') . '/images/upload', $this->attributes['goods_desc']);
-        }
-        return null;
-    }
-
-    public function getScoreAttribute()
-    {
-        $scale = ShopConfig::findByCode('integral_scale');
-        if ($scale > 0) {
-            return $this->integral / ($scale / 100);
-        }
-        return 0;
-    }
-
-    public function getBrandAttribute()
-    {
-        return $this->brand_id;
-    }
-
-    public function getShopAttribute()
-    {
-        $data = [];
-        // $data['name'] = ShopConfig::findByCode('shop_name');
-        $data['id'] = 1;
-        return $data['id'];
-    }
-
-    public function getPromosAttribute()
-    {
-        $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
-        if ($user_agent == array('Platform' => 'Wechat')) {
-            $data = array();
-            return $data;
-        }
-
-        return FavourableActivity::getPromoByGoods($this->goods_id, $this->category, $this->brand, true);
-    }
-
-    public function getExchangeScoreAttribute()
-    {
-        $exchangegoodsobj = ExchangeGoods::where('goods_id', $this->attributes['goods_id'])
-            ->where('is_exchange', 1)
-            ->first();
-        if ($exchangegoodsobj) {
-            return $exchangegoodsobj->exchange_integral;
-        }
-        return 0;
-    }
-
-    public function getIsExchangeAttribute()
-    {
-        $exchangegoodsobj = ExchangeGoods::where('goods_id', $this->attributes['goods_id'])->first();
-        return !empty($exchangegoodsobj->is_exchange);
-    }
-
-    public function getIsOuterVideOurlAttribute()
-    {
-        return $this->is_outer_vider_url;
-    }
-
-    public function getVideourlAttribute()
-    {
-        return $this->video_url;
-    }
-
-    public function getGoodsbriefAttribute()
-    {
-        return $this->goods_brief;
-    }
-
-    public function tags()
-    {
-        return $this->hasMany('App\Models\v2\Tags', 'goods_id', 'goods_id');
-    }
-
-    // public function promos()
-    // {
-    //     return $this->hasMany('App\Models\v2\GoodsActivity', 'goods_id', 'goods_id');
-
-    // }
-
-    public function properties()
-    {
-        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')->where('attribute.attr_type', '!=', 0)->groupBy('attr_id');
-    }
-
-    public function propertie_info()
-    {
-        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')->groupBy('attr_id');
-    }
-
-    public function propertie_by_attrId()
-    {
-        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')
-            ->where('goods_attr.attr_value', "大陆")
-            ->groupBy('attr_id');
-    }
-
-    public function attachments()
-    {
-        return $this->hasMany('App\Models\v2\GoodsGroup', 'parent_id', 'goods_id');
-    }
-
-    public function stock()
-    {
-        return $this->hasMany('App\Models\v2\Products', 'goods_id', 'goods_id');
-    }
-
-    public function comments()
-    {
-        return $this->hasMany('App\Models\v2\Comment', 'id_value', 'goods_id')->where('comment.comment_type', 0)->where('comment_rank', '>', 3); //商品
-    }
-
-    public function getSkuAttribute()
-    {
-        return $this->goods_sn;
-    }
-
-    public function getNameAttribute()
-    {
-        return $this->goods_name;
-    }
-
-    public function getGoodstockAttribute()
-    {
-        return $this->goods_number;
-    }
-
-    public function getPriceAttribute()
-    {
-        return $this->market_price;
-    }
-
-    public function getCurrentpriceAttribute()
-    {
-        $promote_price = self::bargain_price($this->promote_price, $this->promote_start_date, $this->promote_end_date);
-        if (!empty($promote_price)) {
-            return self::price_format($promote_price, false);
-        }
-
-        $user_price = UserRank::getMemberRankPriceByGid($this->goods_id);
-
-        if (!empty($user_price)) {
-            return self::price_format($user_price, false);
-        }
-
-        $current_price = UserRank::getMemberRankPriceByGid($this->goods_id);
-
-        return self::price_format($current_price, false);
-    }
-
-    public function getDiscountAttribute()
-    {
-        $price = self::bargain_price($this->promote_price, $this->promote_start_date, $this->promote_end_date);
-        if ($price > 0) {
-            return [
-                "price"    => $price,                                  // 促销价格
-                "start_at" => $this->promote_start_date,               // 开始时间
-                "end_at"   => $this->promote_end_date,                 // 结束时间
-            ];
-        } else {
-            return null;
-        }
-    }
-
-    public function getShareUrlAttribute()
-    {
-        $uid = Token::authorization();
-
-        $shareUrl = config('app.shop_h5');
-        $endUrl   = substr($shareUrl, -1);
-
-        if (strcmp($endUrl, '/') != 0) {
-            $shareUrl = $shareUrl . '/';
-        }
-
-        if ($uid) {
-            return $shareUrl . '?u=' . $uid . '#/product?id=' . $this->goods_id;
-        }
-
-        return $shareUrl . '#/product?id=' . $this->goods_id;
-    }
-
-    public function getIslikedAttribute()
-    {
-        return CollectGoods::getIsLiked($this->goods_id) ? 1 : 0;
-    }
-
-    public function getGoodsGradeAttribute(){
-        $goodsGrade = Comment::getGradeByGoodsId($this->goods_id);
-        if($goodsGrade == null){
-            return 0;
-        }else{
-            return $goodsGrade;
-        }
-    }
-
-    public function getSalescountAttribute()
-    {
-        return OrderGoods::getSalesCountById($this->goods_id) + $this->virtual_sales;
-    }
-
-    public function getCommentcountAttribute()
-    {
-        return Comment::getCommentCountById($this->goods_id);
-    }
-
-    public function getPhotosAttribute()
-    {
-        //        $goods =  Goods::where('goods_id', $this->goods_id)->first();
-//
-//        $goods_images = formatPhoto($goods->goods_img, $goods->goods_thumb);
-//
-//        $arr = GoodsGallery::getPhotosById($this->goods_id);
-//
-//        if (!empty($goods_images)) {
-//            array_unshift($arr, $goods_images);
-//        }
-//
-//        if (empty($arr)) {
-//            return null;
-//        }
-//
-//        return $arr;
-        return GoodsGallery::getPhotosById($this->goods_id);
-    }
-
-    public function getDefaultPhotoAttribute()
-    {
-        return formatPhoto($this->goods_img);
-    }
-
-    public function getReviewrateAttribute()
-    {
-        return Comment::getCommentRateById($this->goods_id) . '%';
-    }
-
-    public function getIntrourlAttribute()
-    {
-        if (empty($this->goods_desc)) {
-            return null;
-        }
-        return url('/v2/product.intro.' . $this->goods_id);
-    }
-
-    public function getCreatedatAttribute()
-    {
-        return $this->add_time;
-    }
-
-    public function getUpdatedatAttribute()
-    {
-        return $this->last_update;
     }
 
     /**
@@ -1375,6 +1321,54 @@ class Video extends BaseModel
         }
     }
 
+    public function actors()
+    {
+        return $this->belongsToMany('App\Models\v2\Actors', 'goods_actor','goods_id', 'actor_id');
+    }
+    
+    public function tags()
+    {
+        return $this->hasMany('App\Models\v2\Tags', 'goods_id', 'goods_id');
+    }
+
+    // public function promos()
+    // {
+    //     return $this->hasMany('App\Models\v2\GoodsActivity', 'goods_id', 'goods_id');
+
+    // }
+
+    public function properties()
+    {
+        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')->where('attribute.attr_type', '!=', 0)->groupBy('attr_id');
+    }
+
+    public function propertie_info()
+    {
+        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')->groupBy('attr_id');
+    }
+
+    public function propertie_by_attrId()
+    {
+        return $this->belongsToMany('App\Models\v2\Attribute', 'goods_attr', 'goods_id', 'attr_id')
+            ->where('goods_attr.attr_value', "大陆")
+            ->groupBy('attr_id');
+    }
+
+    public function attachments()
+    {
+        return $this->hasMany('App\Models\v2\GoodsGroup', 'parent_id', 'goods_id');
+    }
+
+    public function stock()
+    {
+        return $this->hasMany('App\Models\v2\Products', 'goods_id', 'goods_id');
+    }
+
+    public function comments()
+    {
+        return $this->hasMany('App\Models\v2\Comment', 'id_value', 'goods_id')->where('comment.comment_type', 0)->where('comment_rank', '>', 3); //商品
+    }
+    
     public function linkGoods()
     {
         return $this->belongsToMany('App\Models\v2\LinkGoods', 'link_goods');
