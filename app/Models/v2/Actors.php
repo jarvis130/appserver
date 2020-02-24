@@ -38,12 +38,13 @@ class Actors extends BaseModel
 
     public function getActorAvatarAttribute()
     {
-//        $data = "";
-//        $img = $this->attributes['actor_avatar'];
-//        if($img){
-//            $data = formatPhoto($img);
-//        }
-        return $this->attributes['actor_avatar'];;
+        $data = "";
+        $img = $this->attributes['actor_avatar'];
+        if($img){
+            $data = formatPhoto($img);
+            $data = $data['thumb'];
+        }
+        return $data;
     }
 
     public function getActinTotalAttribute()
