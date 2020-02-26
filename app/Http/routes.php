@@ -274,6 +274,7 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     // 评论
     $router->post('ecapi.comment.create', 'CommentController@create');
     $router->post('ecapi.comment.createRate', 'CommentController@createRate');
+    $router->post('ecapi.comment.getInfo', 'CommentController@getInfo');
     // 演员
     $router->post('ecapi.actor.getvideolistbyactorid', 'ActorController@getVideoListByActorId');
     //关注演员

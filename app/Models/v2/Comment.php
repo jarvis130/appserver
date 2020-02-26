@@ -12,9 +12,9 @@ class Comment extends BaseModel
     protected $table      = 'comment';
     public $timestamps = false;
 
-    protected $appends = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at', 'avatar_url'];
+    protected $appends = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at', 'avatar_url', 'comment_rank'];
 
-    protected $visible = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at', 'avatar_url'];
+    protected $visible = ['id','username','grade','content', 'is_anonymous', 'created_at','updated_at', 'avatar_url', 'comment_rank'];
 
     protected $primaryKey = 'comment_id';
 
@@ -160,8 +160,8 @@ class Comment extends BaseModel
         extract($attributes);
 
         $uid = Token::authorization();
-
-        if ($member = Member::where('user_id', $uid)->first()) {
+        $member = Member::where('user_id', $uid)->first();
+        if (self::where(['user_id'=> $uid, 'id_value'=> $id_value])->count() == 0) {
             return self::create([
                 'comment_type' => $comment_type,
                 'id_value' => $id_value,
@@ -175,6 +175,19 @@ class Comment extends BaseModel
                 'status' => $status,
                 'parent_id' => 0,
                 'user_id' => $uid,
+            ]);
+        }else{
+            self::where('user_id', $uid)->update([
+                'comment_type' => $comment_type,
+                'id_value' => $id_value,
+                'email' => $member->email,
+                //匿名时 用户名默认为ecshop
+                'user_name' => $member->user_name,
+                'content' => $content,
+                'comment_rank' => $comment_rank,
+                'add_time' => time(),
+                'ip_address' => app('request')->ip(),
+
             ]);
         }
 
@@ -220,6 +233,17 @@ class Comment extends BaseModel
         return intval($data);
     }
 
+    public static function getInfo(array $attributes)
+    {
+        extract($attributes);
+
+        $uid = Token::authorization();
+
+        $data = self::where(['user_id'=> $uid, 'id_value'=> $product])->first();
+
+        return $data;
+    }
+
     public function author()
     {
         return $this->belongsTo('App\Models\v2\Member', 'user_id', 'user_id');
@@ -249,6 +273,11 @@ class Comment extends BaseModel
     public function getContentAttribute()
     {
         return $this->attributes['content'];
+    }
+
+    public function getCommentRankAttribute()
+    {
+        return $this->attributes['comment_rank'];
     }
 
     public function getAvatarUrlAttribute()

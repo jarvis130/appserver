@@ -33,11 +33,11 @@ class CommentController extends Controller
     public function create()
     {
         $rules = [
-            'comment_type'  => 'required|integer',
-            'status'        => 'required|integer',
+            'comment_type'  => 'integer',
+            'status'        => 'integer',
             'id_value'      => 'required|integer|min:1',
-            'content'       => 'String|max:320',
-            'comment_rank'       => 'integer',
+            'content'       => 'required|String|max:320',
+            'comment_rank'       => 'numeric',
         ];
 
         if ($error = $this->validateInput($rules)) {
@@ -65,6 +65,22 @@ class CommentController extends Controller
         }
 
         $model = Comment::addRate($this->validated);
+
+        return $this->json($model);
+    }
+
+    //POST  ecapi.comment.getInfo
+    public function getInfo()
+    {
+        $rules = [
+            'product'      => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $model = Comment::getInfo($this->validated);
 
         return $this->json($model);
     }
