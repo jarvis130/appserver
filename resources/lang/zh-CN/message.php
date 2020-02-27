@@ -67,6 +67,10 @@ return [
         'min_goods_amount'  => '商品总额未达到最低限购金额',
         'max_quality_limit' => '商品达到最大限购数量',
     ],
+    'virtual_card' => [
+        'invalid' => '卡号或卡密错误、或者已被使用',
+        'vip_time_invalid' => '充值时长无效'
+    ],
     'cart' => [
         'json_invalid' => 'json格式不正确',
         'no_goods' => '购物车中没有商品',

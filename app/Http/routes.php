@@ -150,6 +150,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.share.download.insert', 'DownloadController@insertData');
     //
     $router->get('ecapi.version.app.check', 'VersionController@checkApp');
+
+    $router->post('ecapi.virtualcard.use', 'VirtualCardController@use');
 });
 
 //Authorization
@@ -281,4 +283,6 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.actor.setAttention', 'ActorController@setAttention');
     $router->post('ecapi.actor.getAttention', 'ActorController@getAttention');
     $router->post('ecapi.actor.attentioned.list', 'ActorController@attentionedList');
+    // 虚拟卡
+//    $router->post('ecapi.virtualcard.use', 'VirtualCardController@use');
 });
