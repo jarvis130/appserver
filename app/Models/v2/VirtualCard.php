@@ -26,8 +26,7 @@ class VirtualCard extends BaseModel
     {
         extract($attributes);
 
-        //$uid = Token::authorization();
-        $uid = 1;
+        $uid = Token::authorization();
 
         $key = 'this is a key';  // 需要和ecshop的admin管理后台的key保持一致
         $coded_card_sn       = Crypt::encrypt($card_sn, $key);
