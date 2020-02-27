@@ -20,6 +20,7 @@ class VirtualCardController extends Controller
         if ($error = $this->validateInput($rules)) {
             return $error;
         }
+
         $data = VirtualCard::use($this->validated);
 
         return $this->json($data);
