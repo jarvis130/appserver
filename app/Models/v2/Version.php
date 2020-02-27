@@ -19,29 +19,35 @@ class Version extends BaseModel
 
     public static function checkVersion()
     {
-        $arr = Header::getUserAgent();
-        $ver = Header::getVer();
+//        $arr = Header::getUserAgent();
+//        $ver = Header::getVer();
+//
+//        $platform = Header::getUserAgent('Platform');
+//        switch ($platform) {
+//            case 'ios':
+//                $platform = 1;
+//                break;
+//            case 'android':
+//                $platform = 2;
+//                break;
+//            default:
+//                $platform = 0;
+//                break;
+//        }
+//
+//        if (is_array($arr) && isset($arr['Platform']) && !empty($ver)) {
+//            $model = Version::where('platform', $platform)->orderBy('version', 'DESC')->first();
+//
+//            if (isset($model->version) && version_compare($ver, $model->version) < 0) {
+//                return self::formatBody(['version_info' => $model]);
+//            }
+//        }
 
-        $platform = Header::getUserAgent('Platform');
-        switch ($platform) {
-            case 'ios':
-                $platform = 1;
-                break;
-            case 'android':
-                $platform = 2;
-                break;
-            default:
-                $platform = 0;
-                break;
-        }
+        $model = Version::where('platform', 1)->orderBy('version', 'DESC')->first();
 
-        if (is_array($arr) && isset($arr['Platform']) && !empty($ver)) {
-            $model = Version::where('platform', $platform)->orderBy('version', 'DESC')->first();
-
-            if (isset($model->version) && version_compare($ver, $model->version) < 0) {
-                return self::formatBody(['version_info' => $model]);
-            }
-        }
+//        if (isset($model->version) && version_compare($ver, $model->version) < 0) {
+            return self::formatBody(['version_info' => $model]);
+//        }
 
         return self::formatBody(['version_info' => null]);
     }
