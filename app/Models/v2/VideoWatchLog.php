@@ -67,8 +67,9 @@ class VideoWatchLog extends BaseModel
 
         if($times >= $num){
             $surplus = $times - $num;
-            return self::formatBody(['times' => $surplus ]);
+        }else{
+            $surplus = 0;
         }
-
+        return self::formatBody(['times' => $surplus ]);
     }
 }
