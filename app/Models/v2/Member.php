@@ -1015,7 +1015,7 @@ class Member extends BaseModel
     public function getVipEndTimeAttribute()
     {
         if($this->attributes['vip_end_time'] != null){
-            return date_format($this->attributes['vip_end_time'], 'Y-m-d H:i:s');
+            return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
             return 0;
         }
