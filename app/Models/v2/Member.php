@@ -39,8 +39,8 @@ class Member extends BaseModel
     public $timestamps = false;
 
     protected $guarded = [];
-    protected $appends = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed'];
-    protected $visible = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed'];
+    protected $appends = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time'];
+    protected $visible = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time'];
 
     public static function login(array $attributes)
     {
@@ -1010,6 +1010,16 @@ class Member extends BaseModel
     public function getGenderAttribute()
     {
         return $this->attributes['sex'];
+    }
+
+    public function getVipEndTimeAttribute()
+    {
+        if($this->attributes['vip_end_time'] != null){
+            return date_format($this->attributes['vip_end_time'], 'Y-m-d H:i:s');
+        }else{
+            return 0;
+        }
+
     }
 
     public function getUsernameAttribute()
