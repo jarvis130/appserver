@@ -67,7 +67,7 @@ class VirtualCard extends BaseModel
         // 查询用户当前vip到期时间
         $curr_time = time();
         $user = Member::find($uid);
-        $vip_end_time = $user['vip_end_time'];
+        $vip_end_time = $user['original_vip_end_time'];
         // 计算到期时间
         if($vip_end_time < $curr_time){
             $new_vip_end_time = $curr_time + $add_time;
