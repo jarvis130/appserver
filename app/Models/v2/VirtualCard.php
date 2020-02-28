@@ -74,7 +74,10 @@ class VirtualCard extends BaseModel
         }else{
             $new_vip_end_time = $vip_end_time + $add_time;
         }
-        Member::where('user_id', $uid)->update(['vip_end_time' => $new_vip_end_time]);
+        Member::where('user_id', $uid)->update([
+            'user_rank' => 2,
+            'vip_end_time' => $new_vip_end_time
+        ]);
 
         return self::formatBody(['vip_end_time' => date("Y-m-d H:i:s", $new_vip_end_time)]);
     }
