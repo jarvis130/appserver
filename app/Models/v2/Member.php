@@ -244,7 +244,7 @@ class Member extends BaseModel
             if($userRank < 2){
                 //当天观看次数
                 $prefix = DB::connection('shop')->getTablePrefix();
-                $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where date_format('add_time','%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
+                $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where user_id = ".$uid." and date_format(from_unixtime(add_time),'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
                 $num = $result[0]->num;
                 $watchedTimes = $num;
             }
@@ -1160,7 +1160,7 @@ class Member extends BaseModel
         if($userRank < 2){
             //当天观看次数
             $prefix = DB::connection('shop')->getTablePrefix();
-            $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where date_format('add_time','%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
+            $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where user_id = ".$userId." and date_format(from_unixtime(add_time),'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
             $num = $result[0]->num;
             $watchedTimes = $num;
         }
