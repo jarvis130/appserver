@@ -101,6 +101,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
 
     $router->post('ecapi.banner.list', 'BannerController@index');
 
+    $router->post('ecapi.ads.list', 'BannerAdsController@index');
+
     $router->post('ecapi.version.check', 'VersionController@check');
 
     $router->post('ecapi.recommend.brand.list', 'BrandController@recommend');
