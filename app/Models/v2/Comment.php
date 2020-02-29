@@ -5,6 +5,7 @@ namespace App\Models\v2;
 use App\Models\BaseModel;
 use App\Helper\Token;
 use DB;
+use Illuminate\Support\Facades\Storage;
 
 class Comment extends BaseModel
 {
@@ -61,7 +62,7 @@ class Comment extends BaseModel
 
         $model = self::select('c.*', 'a.avatar')
             ->from('comment as c')
-            ->leftJoin('avatar as a', 'a.user_id', '=', 'c.id_value')
+            ->leftJoin('avatar as a', 'a.user_id', '=', 'c.user_id')
             ->where(['c.id_value' => $product, 'c.status' => 1])
             ->orderBy('add_time', 'DESC');
 
@@ -239,7 +240,11 @@ class Comment extends BaseModel
 
         $uid = Token::authorization();
 
-        $data = self::where(['user_id'=> $uid, 'id_value'=> $product])->first();
+        $data = self::select('c.*', 'a.avatar')
+            ->from('comment as c')
+            ->leftJoin('avatar as a', 'a.user_id', '=', 'c.user_id')
+            ->where(['c.id_value' => $product, 'c.status' => 1, 'c.user_id'=> $uid])
+            ->first();
 
         return $data;
     }
@@ -282,7 +287,13 @@ class Comment extends BaseModel
 
     public function getAvatarUrlAttribute()
     {
-        return empty($this->attributes['avatar']) ? null : $this->attributes['avatar'];
+        $avatar = $this->attributes['avatar'];
+        if($avatar){
+            $avatar = Storage::disk('avatar')->url($avatar);
+            return $avatar;
+        }else {
+            return null;
+        }
     }
 
     public function getIsAnonymousAttribute()
