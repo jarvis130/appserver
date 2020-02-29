@@ -19,7 +19,7 @@ class Utils {
         $connt = 0;
         $temp = array();
         while ($connt < $length) {
-            $temp[] = mt_rand($start,$end);
+            $temp[] = mt_rand($start, $end);
             $data = array_unique($temp);
             $connt = count($data);
         }
