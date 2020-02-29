@@ -522,11 +522,11 @@ class Video extends BaseModel
         $total = $model->count(); // 总数据量
         $count = 12; // 需要获取的数据量
 
-        if($total > $count){
+        if ($total > $count) {
             $ids = array();
             $offsets = Utils::get_rand_number(1, $total, $count);
             // 循环取数据
-            foreach($offsets as $offset){
+            foreach ($offsets as $offset) {
                 $row = self::select('*')->where($where)->offset($offset)->limit(1)->get()->toArray();
                 $id = reset($row)['id'];
                 array_push($ids, $id);

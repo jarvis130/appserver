@@ -16,12 +16,12 @@ class Utils {
      * @return array       生成的随机数
      */
     public static function get_rand_number($start = 1, $end = 10, $length = 4){
-        $connt=0;
-        $temp=array();
-        while($connt<$length){
-            $temp[]=mt_rand($start,$end);
-            $data=array_unique($temp);
-            $connt=count($data);
+        $connt = 0;
+        $temp = array();
+        while ($connt < $length) {
+            $temp[] = mt_rand($start,$end);
+            $data = array_unique($temp);
+            $connt = count($data);
         }
         //sort($data);
         return $data;
