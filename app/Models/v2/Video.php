@@ -2,6 +2,7 @@
 
 namespace App\Models\v2;
 
+use App\Libs\Utils;
 use App\Models\BaseModel;
 
 use App\Helper\Token;
@@ -503,6 +504,41 @@ class Video extends BaseModel
             $data = $model->get()->toArray();
             return self::formatBody(['products' => $data]);
         }
+    }
+
+    /**
+     * 智能推荐列表
+     *
+     * @return [type]             [description]
+     */
+    public static function getAiRecommendList()
+    {
+        $where  = ['is_delete' => 0, 'is_on_sale' => 1, 'is_real' => '2'];
+
+        $model = self::select('*');
+
+        $model = $model->where($where);
+
+        $total = $model->count(); // 总数据量
+        $count = 12; // 需要获取的数据量
+
+        if($total > $count){
+            $ids = array();
+            $offsets = Utils::get_rand_number(1, $total, $count);
+            // 循环取数据
+            foreach($offsets as $offset){
+                $row = self::select('*')->where($where)->offset($offset)->limit(1)->get()->toArray();
+                $id = reset($row)['id'];
+                array_push($ids, $id);
+            }
+
+            $model->whereIn('goods_id', $ids);
+        }
+
+        $model->with(['properties', 'propertie_info']);
+
+        $data = $model->get()->toArray();
+        return self::formatBody(['products' => $data]);
     }
 
     /**

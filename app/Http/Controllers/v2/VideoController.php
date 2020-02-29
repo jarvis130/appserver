@@ -186,6 +186,15 @@ class VideoController extends Controller
         return $this->json($data);
     }
 
+    /**
+     * 智能推荐列表
+     */
+    public function aiRecommendList()
+    {
+        $data = Video::getAiRecommendList();
+
+        return $this->json($data);
+    }
 
     public function recommendList()
     {
