@@ -236,7 +236,7 @@ class Video extends BaseModel
 //        $arr = GoodsGallery::getPhotosById($this->goods_id);
 //
 //        if (!empty($goods_images)) {
-//            array_unshift($arr, $goods_images);
+//            array_unshift($arr, $goods_imcheckWatchTimesages);
 //        }
 //
 //        if (empty($arr)) {
