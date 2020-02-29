@@ -13,7 +13,7 @@ class BannerAds extends BaseModel
         if (strlen($file) > 0) {
             $data = self::get_flash_xml($file);
         }
-        return self::formatBody(['banners' => $data]);
+        return self::formatBody(['ads' => $data]);
     }
 
     private static function get_flash_xml($file)

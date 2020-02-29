@@ -10,7 +10,7 @@ class BannerAdsController extends Controller
 {
 
     /**
-    * POST ecapi.banner.list
+    * POST ecapi.ads.list
     */
     public function index(Request $request)
     {
