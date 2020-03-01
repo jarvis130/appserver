@@ -524,10 +524,10 @@ class Video extends BaseModel
 
         if ($total > $count) {
             $ids = array();
-            $offsets = Utils::get_rand_number(1, $total, $count);
+            $offsets = Utils::get_rand_number(0, $total - 1, $count);
             // 循环取数据
             foreach ($offsets as $offset) {
-                $row = self::select('*')->where($where)->offset($offset - 1)->limit(1)->get()->toArray();
+                $row = self::select('*')->where($where)->offset($offset)->limit(1)->get()->toArray();
                 $id = reset($row)['id'];
                 array_push($ids, $id);
             }
