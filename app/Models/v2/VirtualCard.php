@@ -55,6 +55,7 @@ class VirtualCard extends BaseModel
             'cart_good_id' => json_encode([$goods_id])
         );
         $order = Cart::createVideoOrder($orderInfo);
+        $order_sn = $order['order']['order_sn'];
 
         /* 更新卡为已使用 */
         $updateCount = self::where('card_sn', $coded_card_sn)
@@ -62,7 +63,7 @@ class VirtualCard extends BaseModel
             ->where('is_used', 0)
             ->update([
                 'is_saled' => 1,
-                'order_sn' => $order['order']['order_sn'],
+                'order_sn' => $order_sn,
                 'is_used' => 1,
                 'use_time' => time()
             ]);
@@ -84,6 +85,13 @@ class VirtualCard extends BaseModel
         Member::where('user_id', $uid)->update([
             'user_rank' => 2,
             'vip_end_time' => $new_vip_end_time
+        ]);
+
+        /* 修改订单状态 */
+        Order::where('order_sn', $order_sn)->update([
+            'order_status' => Order::OS_SPLITED,
+            'shipping_status' => Order::SS_RECEIVED,
+            'pay_status' => Order::PS_PAYED
         ]);
 
         return self::formatBody(['vip_end_time' => date("Y-m-d H:i:s", $new_vip_end_time)]);
