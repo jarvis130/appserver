@@ -1022,7 +1022,7 @@ class Member extends BaseModel
         if($this->attributes['vip_end_time'] != null){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
-            return 0;
+            return null;
         }
 
     }
