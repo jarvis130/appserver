@@ -1359,23 +1359,8 @@ class Video extends BaseModel
 
     // 获取商品VIP时长
     public static function getGoodsVipTime($goods_id){
-        switch ($goods_id) {
-            case 1:
-                $day = 30;
-                break;
-            case 2:
-                $day = 90;
-                break;
-            case 3:
-                $day = 180;
-                break;
-            case 4:
-                $day = 360;
-                break;
-            default:
-                $day = 0;
-                break;
-        }
+        $goods = self::where('goods_id', $goods_id)->first();
+        $day = $goods['seller_note'];
 
         $time = $day * 24 * 60 * 60;
         return $time;

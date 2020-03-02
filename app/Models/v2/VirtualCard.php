@@ -36,6 +36,12 @@ class VirtualCard extends BaseModel
         $card = self::where('card_sn', $coded_card_sn)->where('card_password', $coded_card_password)->first();
         $goods_id = $card['goods_id'];
 
+        /* 根据视频商品获取时长 */
+        $add_time = Video::getGoodsVipTime($goods_id);
+        if($add_time <= 0){
+            return self::formatError(self::BAD_REQUEST, trans('message.virtual_card.vip_time_invalid'));
+        }
+
         /* 创建订单 */
         $orderInfo = array(
             'consignee' => $uid,
@@ -59,11 +65,6 @@ class VirtualCard extends BaseModel
         }
 
         /* 更新用户vip到期时间 */
-        // 根据视频商品获取时长
-        $add_time = Video::getGoodsVipTime($goods_id);
-        if($add_time <= 0){
-            return self::formatError(self::BAD_REQUEST, trans('message.virtual_card.vip_time_invalid'));
-        }
         // 查询用户当前vip到期时间
         $curr_time = time();
         $user = Member::find($uid);
