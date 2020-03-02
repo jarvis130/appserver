@@ -253,7 +253,7 @@ class Member extends BaseModel
             }elseif($userRank == 1){
                 $watchTimes = 10;
             }else{
-                $watchTimes = '无限';
+                $watchTimes = -1; // -1表示无限次
             }
             $user['watch_times'] = $watchTimes;
             $user['watched_times'] = $watchedTimes;
@@ -1174,7 +1174,7 @@ class Member extends BaseModel
         }elseif($userRank == 1){
             $watchTimes = 10;
         }else{
-            $watchTimes = '无限';
+            $watchTimes = -1; // -1表示无限次
         }
         $info['watch_times'] = $watchTimes;
         $info['watched_times'] = $watchedTimes;
