@@ -27,14 +27,14 @@ class Video extends BaseModel
 
     protected $appends = [
         'id', 'category', 'brand', 'shop', 'sku', 'default_photo', 'photos', 'name', 'price', 'current_price', 'discount', 'is_exchange', 'exchange_score', 'sales_count', 'score', 'good_stock',
-        'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at', 'promos', 'goods_grade'
+        'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url', 'created_at', 'updated_at', 'promos', 'goods_grade', 'aspect_ratio'
     ];
 
     protected $visible = [
         'id', 'category', 'brand', 'shop', 'tags', 'default_photo', 'photos', 'sku', 'name', 'price', 'is_exchange', 'exchange_score', 'current_price', 'discount', 'is_shipping', 'promos',
         'stock', 'properties','propertie_info', 'sales_count', 'attachments', 'goods_desc', 'score', 'comments', 'good_stock', 'comment_count', 'is_liked', 'review_rate', 'intro_url', 'share_url',
         'created_at', 'updated_at','is_real','is_on_sale','is_alone_sale','goods_number','market_price','integral','goods_name','goods_sn','extension_code', 'is_outer_vide_ourl', 'video_url', 'pub_id',  'goods_brief',
-        'goods_grade', 'actors'
+        'goods_grade', 'actors', 'aspect_ratio'
     ];
 
     // protected $with = [];
@@ -88,6 +88,11 @@ class Video extends BaseModel
         // $data['name'] = ShopConfig::findByCode('shop_name');
         $data['id'] = 1;
         return $data['id'];
+    }
+
+    public function getAspectRatioAttribute()
+    {
+        return $this->attributes['aspect_ratio'];
     }
 
     public function getPromosAttribute()
@@ -682,7 +687,7 @@ class Video extends BaseModel
                     $v2 = $attr['attr_value'];
                 }
             }
-            $product_data['breadcrumb'] = $v1.' / '.$v2;
+            $product_data['breadcrumb'] = $v2.' / '.$v1;
         }
         
         if (!$data) {

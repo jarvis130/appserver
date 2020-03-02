@@ -473,6 +473,11 @@ class Member extends BaseModel
 
         $uid = Token::authorization();
 
+        $member = self::where('user_name', $mobile)->where('user_id', '!=', $uid)->first();
+        if($member){
+            return self::formatError(self::BAD_REQUEST, "用户名已存在");
+        }
+
         $member = self::where('user_id', $uid)->first();
         //mobile . third-party
         if (strpos($member->value('email'), '@mobile.user') || $member->mobile_binded) {
@@ -483,7 +488,7 @@ class Member extends BaseModel
             return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.bind'));
         }
         
-        $data = ['mobile_phone' => $mobile, 'user_name' => $mobile, 'user_rank' => 1];
+        $data = ['user_name' => $mobile, 'user_rank' => 1];
         if (isset($password)) {
             $data['password'] = self::setPassword($password);
         }
