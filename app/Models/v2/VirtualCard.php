@@ -33,7 +33,13 @@ class VirtualCard extends BaseModel
         $coded_card_password = Crypt::encrypt($card_password, $key);
 
         /* 查询卡信息 */
-        $card = self::where('card_sn', $coded_card_sn)->where('card_password', $coded_card_password)->first();
+        $card = self::where('card_sn', $coded_card_sn)
+            ->where('card_password', $coded_card_password)
+            ->where('is_used', 0)
+            ->first();
+        if($card){
+            return self::formatError(self::BAD_REQUEST, trans('message.virtual_card.invalid'));
+        }
         $goods_id = $card['goods_id'];
 
         /* 根据视频商品获取时长 */
