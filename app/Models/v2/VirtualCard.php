@@ -37,7 +37,7 @@ class VirtualCard extends BaseModel
             ->where('card_password', $coded_card_password)
             ->where('is_used', 0)
             ->first();
-        if($card){
+        if(empty($card)){
             return self::formatError(self::BAD_REQUEST, trans('message.virtual_card.invalid'));
         }
         $goods_id = $card['goods_id'];
