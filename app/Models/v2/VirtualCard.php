@@ -55,7 +55,7 @@ class VirtualCard extends BaseModel
             'cart_good_id' => json_encode([$goods_id])
         );
         $order = Cart::createVideoOrder($orderInfo);
-        $order_sn = $order['order']['order_sn'];
+        $order_sn = $order['order']['sn'];
 
         /* 更新卡为已使用 */
         $updateCount = self::where('card_sn', $coded_card_sn)
