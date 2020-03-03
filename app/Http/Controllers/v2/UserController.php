@@ -300,7 +300,7 @@ class UserController extends Controller
     {
         $rules = [
             'mobile'   => 'required|string',
-            'code'     => 'required|string|digits:6',
+            'code'     => 'string',
             'password' => 'string',
         ];
 
