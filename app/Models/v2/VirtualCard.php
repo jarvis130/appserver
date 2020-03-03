@@ -33,7 +33,13 @@ class VirtualCard extends BaseModel
         $coded_card_password = Crypt::encrypt($card_password, $key);
 
         /* 查询卡信息 */
-        $card = self::where('card_sn', $coded_card_sn)->where('card_password', $coded_card_password)->first();
+        $card = self::where('card_sn', $coded_card_sn)
+            ->where('card_password', $coded_card_password)
+            ->where('is_used', 0)
+            ->first();
+        if(empty($card)){
+            return self::formatError(self::BAD_REQUEST, trans('message.virtual_card.invalid'));
+        }
         $goods_id = $card['goods_id'];
 
         /* 根据视频商品获取时长 */
@@ -49,6 +55,7 @@ class VirtualCard extends BaseModel
             'cart_good_id' => json_encode([$goods_id])
         );
         $order = Cart::createVideoOrder($orderInfo);
+        $order_sn = $order['order']['sn'];
 
         /* 更新卡为已使用 */
         $updateCount = self::where('card_sn', $coded_card_sn)
@@ -56,7 +63,7 @@ class VirtualCard extends BaseModel
             ->where('is_used', 0)
             ->update([
                 'is_saled' => 1,
-                'order_sn' => $order['order']['order_sn'],
+                'order_sn' => $order_sn,
                 'is_used' => 1,
                 'use_time' => time()
             ]);
@@ -78,6 +85,13 @@ class VirtualCard extends BaseModel
         Member::where('user_id', $uid)->update([
             'user_rank' => 2,
             'vip_end_time' => $new_vip_end_time
+        ]);
+
+        /* 修改订单状态 */
+        Order::where('order_sn', $order_sn)->update([
+            'order_status' => Order::OS_SPLITED,
+            'shipping_status' => Order::SS_RECEIVED,
+            'pay_status' => Order::PS_PAYED
         ]);
 
         return self::formatBody(['vip_end_time' => date("Y-m-d H:i:s", $new_vip_end_time)]);
