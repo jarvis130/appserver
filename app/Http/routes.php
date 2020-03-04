@@ -152,6 +152,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.share.download.insert', 'DownloadController@insertData');
     //
     $router->get('ecapi.version.app.check', 'VersionController@checkApp');
+
+    $router->post('ecapi.actor.list', 'ActorController@index');
 });
 
 //Authorization
@@ -279,6 +281,7 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.comment.createRate', 'CommentController@createRate');
     $router->post('ecapi.comment.getInfo', 'CommentController@getInfo');
     // 演员
+//    $router->post('ecapi.actor.list', 'ActorController@index');
     $router->post('ecapi.actor.getvideolistbyactorid', 'ActorController@getVideoListByActorId');
     //关注演员
     $router->post('ecapi.actor.setAttention', 'ActorController@setAttention');
