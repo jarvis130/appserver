@@ -77,10 +77,17 @@ class Actors extends BaseModel
 
         $model = self::where($where);
 
+        // 国家
         if(isset($country) && $country){
             $model = $model->where('country', $country);
         }
 
+        // 姓名首字母
+        if(isset($name_initial) && $name_initial){
+            $model = $model->where('name_initial', strtoupper($name_initial));
+        }
+
+        // 关键字
         if(isset($keyword) && $keyword){
             $keyword = trim($keyword);
             $keyword = strip_tags($keyword);

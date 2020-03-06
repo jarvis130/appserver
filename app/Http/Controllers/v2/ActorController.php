@@ -19,6 +19,7 @@ class ActorController extends Controller
             'page'            => 'integer|min:1',
             'per_page'        => 'required_with:page|integer|min:1',
             'country'         => 'string|min:1',
+            'name_initial'    => 'string|min:1|max:1',
             'keyword'         => 'string|min:1',
             'sort_key'        => 'string|min:1',
             'sort_value'      => 'required_with:sort_key|string|min:1',
