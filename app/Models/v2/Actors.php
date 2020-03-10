@@ -59,7 +59,8 @@ class Actors extends BaseModel
 
     public function getActinTotalAttribute()
     {
-        return 0;
+        $total = GoodsActors::getVideoTotalByActorId($this->attributes['actor_id']);
+        return $total;
     }
 
      public function getActorDescAttribute()
