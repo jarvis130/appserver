@@ -45,6 +45,54 @@ class JuhePay
         return $sign;
     }
 
+    public function post($path, $params=array())
+    {
+        return $this->call('post', $path, $params);
+    }
+
+    public function call($method, $path, $params=array())
+    {
+        $url = $this->base_url.$path;
+        $options = array(
+            CURLOPT_HEADER => 0,
+            CURLOPT_URL => $url,
+            CURLOPT_FRESH_CONNECT => 1,
+            CURLOPT_RETURNTRANSFER => 1,
+            CURLOPT_FORBID_REUSE => 1,
+            CURLOPT_TIMEOUT => 10,
+        );
+
+        $param_string = http_build_query($params);
+        switch (strtolower($method)) {
+            case 'post':
+                $options += array(CURLOPT_POST => 1,
+                    CURLOPT_POSTFIELDS => $param_string);
+                break;
+            case 'put':
+                $options += array(CURLOPT_PUT => 1,
+                    CURLOPT_POSTFIELDS => $param_string);
+                break;
+            case 'delete':
+                $options[CURLOPT_CUSTOMREQUEST] = 'DELETE';
+                if ($param_string) {
+                    $options[CURLOPT_URL] .= '?'.$param_string;
+                }
+                break;
+            default:
+                if ($param_string) {
+                    $options[CURLOPT_URL] .= '?'.$param_string;
+                }
+        }
+
+        $ch = curl_init();
+        curl_setopt_array($ch, $options);
+        if (! $result = curl_exec($ch)) {
+            $this->on_error(curl_error($ch));
+        }
+        curl_close($ch);
+        return $result;
+    }
+
     /**
      *设置debug信息
      */

@@ -689,10 +689,14 @@ class Payment extends BaseModel
                 $parameter['bank_code'] = $bank_code;
             }
 
-            //生成签名
             $juhepay = new JuhePay();
+
+            //生成签名
             $sign = $juhepay->createMd5Sign($parameter, $config['juhepay_key']);
             $parameter['sign'] = $sign;
+
+            //支付
+            $juhepay->post();
 
             return self::formatBody([
                 'order' => $order,
