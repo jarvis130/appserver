@@ -7,7 +7,8 @@ use App\Helper\Token;
 use App\Helper\Header;
 use App\Services\Payment\Alipay\AlipayRSA;
 use App\Services\Payment\Alipay\AlipayNotify;
-use App\Services\Payment\Juhepay\JuhePay;
+use App\Services\Payment\Juhepay\Juhepay;
+use App\Services\Payment\Juhepay\JuhepayNotify;
 use App\Services\Payment\wxpay\WxPay;
 use App\Services\Payment\wxpay\WxResponse;
 use App\Services\Payment\Unionpay\Union;
@@ -36,8 +37,8 @@ class Payment extends BaseModel
         $userAgent = Header::getUserAgent();
         
         $model = array();
-        $response = Authorize::info();
-        if ($response['result'] == 'success') {
+//        $response = Authorize::info();
+//        if ($response['result'] == 'success') {
             if (true) {
                 //余额支付
                 if ($arr = Pay::where(['enabled' => 1, 'pay_code' => 'balance'])->select('pay_code as code','pay_name as name','pay_desc as desc')->first()) {
@@ -91,8 +92,39 @@ class Payment extends BaseModel
                         array_push($model, $arr);
                     }
                 }
+
+                // 聚合支付
+                if ($arr = Pay::where(['enabled' => 1, 'pay_code' => 'juhepay'])->select('pay_code as code','pay_name as name','pay_desc as desc', 'pay_config as config')->first()) {
+                    $arr = $arr->toArray();
+
+                    $juhepay_pay_method = Pay::getConfigValueByName($arr['config'], 'juhepay_pay_method');
+                    if ($juhepay_pay_method) {
+                        $name = $arr['name'];
+                        // 获取支持的支付方式
+                        $pay_methods = explode(',', trim($juhepay_pay_method));
+                        foreach ($pay_methods as $pay_method){
+                            switch ($pay_method){
+                                case '1':
+                                    $arr['code'] = 'juhepay.alipay';
+                                    $arr['name'] = $name . '-支付宝';
+                                    break;
+                                case '2':
+                                    $arr['code'] = 'juhepay.wxpay';
+                                    $arr['name'] = $name . '-微信支付';
+                                    break;
+                                case '3':
+                                    $arr['code'] = 'juhepay.kjpay';
+                                    $arr['name'] = $name . '-快捷支付';
+                                    break;
+                            }
+
+                            unset($arr['config']);
+                            array_push($model, $arr);
+                        }
+                    }
+                }
             }
-        }
+//        }
 
         return self::formatBody(['payment_types' => $model]);
     }
@@ -645,15 +677,16 @@ class Payment extends BaseModel
 
         //-----------  聚合支付  -----------//
         if ($code == 'juhepay.alipay' || $code == 'juhepay.wxpay' || $code == 'juhepay.kjpay') {
-            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
+            $payment = Pay::checkConfig('juhepay');;
 
             if (!$payment) {
                 return self::formatError(self::NOT_FOUND);
             }
 
-            $config = self::checkConfig(['juhepay_partner', 'juhepay_account', 'juhepay_key'], $payment);
+            $juhepay_partner = Pay::getConfigValueByName($payment, 'juhepay_partner');
+            $juhepay_key = Pay::getConfigValueByName($payment, 'juhepay_key');
 
-            if (!$config) {
+            if(empty($juhepay_partner) || empty($juhepay_key)){
                 return self::formatError(self::UNKNOWN_ERROR);
             }
 
@@ -675,7 +708,7 @@ class Payment extends BaseModel
                 'version'           => '1.0',
                 'charset'           => 'UTF-8',
                 'sign_type'         => 'MD5',
-                'merchant_id'       => $config['juhepay_partner'],
+                'merchant_id'       => $juhepay_partner,
                 'nonce_str'         => str_random(32),
                 'notify_url'        => url('/v2/order.notify.' . $code),
                 'client_ip'         => self::get_client_ip(), // 终端ip
@@ -689,20 +722,27 @@ class Payment extends BaseModel
                 $parameter['bank_code'] = $bank_code;
             }
 
-            $juhepay = new JuhePay();
+            $juhepay = new Juhepay();
 
             //生成签名
-            $sign = $juhepay->createMd5Sign($parameter, $config['juhepay_key']);
+            $sign = $juhepay->createMd5Sign($parameter, $juhepay_key);
             $parameter['sign'] = $sign;
 
             //支付
-            $juhepay->post();
+            $pay_result = $juhepay->pay($parameter);
+
+            if($pay_result['status'] != 0){
+                return self::formatError(self::BAD_REQUEST, $pay_result['message']);
+            }
+
+            if($pay_result['result_code'] != 0){
+                return self::formatError(self::BAD_REQUEST, $pay_result['err_msg']);
+            }
 
             return self::formatBody([
                 'order' => $order,
-                'alipay' => ['html' => $html_text],
+                'juhepay' => ['url' => $pay_result['pay_info']],
             ]);
-            // echo $html_text;
         }
     }
 
@@ -1206,6 +1246,80 @@ class Payment extends BaseModel
             }
 
             return true;
+        }
+
+        //--------- 聚合支付 notify ----------
+        if ($code == 'juhepay.alipay' || $code == 'juhepay.wxpay' || $code == 'juhepay.kjpay') {
+            Log::info('notify:'. json_encode($_POST));
+
+            if ($_POST['status'] == 0) {
+                $payment = Pay::where('pay_code', 'juhepay')->first();
+
+                if (!$payment) {
+                    return 'fail';
+                }
+
+                $juhepay_key = Pay::getConfigValueByName($payment, 'juhepay_key');
+
+                if(empty($juhepay_key)){
+                    return 'fail';
+                }
+
+                $juhepay_notify = new JuhepayNotify();
+
+                // 验证签名
+                $sign_result = $juhepay_notify->getSignVeryfy($_POST, $juhepay_key);
+
+                if (!$sign_result) {
+                    return 'fail';
+                }
+
+                if ($_POST['err_code'] == 0) {
+                    // 查询订单
+                    $order = Order::findUnpayedBySN($_POST['out_trade_no']);
+
+                    // 校验订单是否已经处理过
+                    if($order->pay_status == Order::PS_PAYED){
+                        return 'fail';
+                    }
+
+                    /* 修改订单状态 */
+                    $order->pay_time = time();
+                    $order->order_status = Order::OS_CONFIRMED;
+                    $order->pay_status = Order::PS_PAYED;
+                    $order->pay_id = $pay_id;
+                    $order->pay_name = "聚合支付：" . $code;
+                    $order->money_paid += $order->order_amount;
+                    $order->order_amount = 0;
+                    $order->save();
+
+                    OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
+                    AffiliateLog::affiliate($order->order_id);
+                    Erp::order($order->order_sn);
+                    //发送短信
+                    $params = [
+                        'order_sn' => $order->order_sn,
+                        'consignee' => $order->consignee['name'],//收货人姓名
+                        'tel' => $order->tel,//收货人手机号
+                    ];
+                    Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
+                    $params = [
+                        'order_sn' => $order->order_sn,
+                        'money_paid' => $order->money_paid,//支付金额
+                    ];
+                    Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
+                    Log::info('notify_order:'. json_encode($order));
+
+                    Log::info('notify_is_success:'. $_POST['is_success']);
+                    return 'success';
+                } else {
+                    Log::info('notify:'. json_encode($_POST));
+                    return 'fail';
+                }
+            } else {
+                Log::info('notify_not_post:'. json_encode($_POST));
+                return 'fail';
+            }
         }
     }
 

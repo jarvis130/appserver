@@ -1368,4 +1368,18 @@ class Order extends BaseModel
 
         return false;
     }
+
+    /**
+     * 付款之后处理虚拟卡商品逻辑
+     * @param   array   $order  订单信息
+     */
+    public static function deal_virtual_card_after_payed($order_id)
+    {
+        $uid = Token::authorization();
+        if ($order = self::where(['user_id' => $uid, 'order_id' => $order_id])->first()) {
+            
+        }
+
+        return false;
+    }
 }

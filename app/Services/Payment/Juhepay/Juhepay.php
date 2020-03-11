@@ -21,8 +21,10 @@ namespace App\Services\Payment\Juhepay;
 use App\Services\Payment\wxpay\TenpayHttpClient;
 use Log;
 
-class JuhePay
+class Juhepay
 {
+    public $pay_url = 'http://47.90.50.227/smartpayment/pay/gateway';
+
     /**
      *创建package签名
      */
@@ -45,14 +47,35 @@ class JuhePay
         return $sign;
     }
 
-    public function post($path, $params=array())
+    public function pay($param, $result_decode = true)
     {
-        return $this->call('post', $path, $params);
+        if (empty($param['order_no'])) {
+            return "订单号错误";
+        }
+
+        // if(empty($param['notify_url'])){
+        //     return "付款成功回调地址错误";
+        // }
+
+        if (empty($param['total_amount'])) {
+            return "支付金额错误";
+        }
+
+        $rst = $this->post($this->pay_url, $param);
+        if ($result_decode == true) {
+            return json_decode($rst, true);
+        }
+
+        return $rst;
     }
 
-    public function call($method, $path, $params=array())
+    public function post($url, $params=array())
     {
-        $url = $this->base_url.$path;
+        return $this->call('post', $url, $params);
+    }
+
+    public function call($method, $url, $params=array())
+    {
         $options = array(
             CURLOPT_HEADER => 0,
             CURLOPT_URL => $url,
