@@ -163,7 +163,7 @@ class OrderController extends Controller
     {
         $rules = [
             'order' => 'required|integer|min:1',
-            'code' => 'required|string|in:alipay.app,wxpay.app,unionpay.app,cod.app,wxpay.web,teegon.wap,alipay.wap,wxpay.wxa,balance,wxpay.h5,cod',
+            'code' => 'required|string|in:alipay.app,wxpay.app,unionpay.app,cod.app,wxpay.web,teegon.wap,alipay.wap,wxpay.wxa,balance,wxpay.h5,cod,juhepay.alipay,juhepay.wxpay,juhepay.kjpay',
             'openid' => 'required_if:code,wxpay.web|string',
             'channel' => 'string',
             'referer' => 'string',

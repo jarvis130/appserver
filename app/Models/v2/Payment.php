@@ -7,6 +7,7 @@ use App\Helper\Token;
 use App\Helper\Header;
 use App\Services\Payment\Alipay\AlipayRSA;
 use App\Services\Payment\Alipay\AlipayNotify;
+use App\Services\Payment\Juhepay\JuhePay;
 use App\Services\Payment\wxpay\WxPay;
 use App\Services\Payment\wxpay\WxResponse;
 use App\Services\Payment\Unionpay\Union;
@@ -640,6 +641,64 @@ class Payment extends BaseModel
             }
 
             return self::formatBody(['order' => $order, 'unionpay' => ['tn' => $result_arr['tn'] ]]);
+        }
+
+        //-----------  聚合支付  -----------//
+        if ($code == 'juhepay.alipay' || $code == 'juhepay.wxpay' || $code == 'juhepay.kjpay') {
+            $payment = self::where(['type' => 'payment', 'status' => 1, 'code' => $code])->first();
+
+            if (!$payment) {
+                return self::formatError(self::NOT_FOUND);
+            }
+
+            $config = self::checkConfig(['juhepay_partner', 'juhepay_account', 'juhepay_key'], $payment);
+
+            if (!$config) {
+                return self::formatError(self::UNKNOWN_ERROR);
+            }
+
+            switch ($code){
+                case 'juhepay.alipay':
+                    $service = 'pay.alipay.wappay';
+                    break;
+                case 'juhepay.wxpay':
+                    $service = 'pay.wxpay.sm';
+                    break;
+                case 'juhepay.kjpay':
+                    $service = 'pay.kj.web';
+                    $bank_code = '';
+                    break;
+            }
+
+            $parameter = array(
+                'service'           => $service,
+                'version'           => '1.0',
+                'charset'           => 'UTF-8',
+                'sign_type'         => 'MD5',
+                'merchant_id'       => $config['juhepay_partner'],
+                'nonce_str'         => str_random(32),
+                'notify_url'        => url('/v2/order.notify.' . $code),
+                'client_ip'         => self::get_client_ip(), // 终端ip
+                /* 业务参数 */
+                'goods_desc'        => $shop_name,
+                'out_trade_no'      => $order->order_sn,
+                'total_amount'      => $order->order_amount,
+            );
+
+            if(!empty($bank_code)){
+                $parameter['bank_code'] = $bank_code;
+            }
+
+            //生成签名
+            $juhepay = new JuhePay();
+            $sign = $juhepay->createMd5Sign($parameter, $config['juhepay_key']);
+            $parameter['sign'] = $sign;
+
+            return self::formatBody([
+                'order' => $order,
+                'alipay' => ['html' => $html_text],
+            ]);
+            // echo $html_text;
         }
     }
 
