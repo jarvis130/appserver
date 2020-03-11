@@ -92,7 +92,11 @@ class Video extends BaseModel
 
     public function getAspectRatioAttribute()
     {
-        return (float)$this->attributes['aspect_ratio'];
+        $result = (float)$this->attributes['aspect_ratio'];
+        if($result == 0){
+            $result = 16/9;
+        }
+        return $result;
     }
 
     public function getPromosAttribute()
