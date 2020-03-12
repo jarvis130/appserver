@@ -38,7 +38,7 @@ class Juhepay
                 $signPars .= $k . '=' .$v.'&';
             }
         }
-        $signPars .= '&key=' . $key;
+        $signPars .= 'key=' . $key;
 
         $sign = strtoupper(md5($signPars));
 
