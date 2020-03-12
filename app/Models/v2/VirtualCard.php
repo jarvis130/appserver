@@ -72,7 +72,7 @@ class VirtualCard extends BaseModel
         }
 
         /* 更新用户vip到期时间 */
-        Member::updateVipTime($uid, $add_time);
+        $vip_end_time = Member::updateVipTime($uid, $add_time);
 
         /* 修改订单状态 */
         Order::where('order_sn', $order_sn)->update([
@@ -81,6 +81,6 @@ class VirtualCard extends BaseModel
             'pay_status' => Order::PS_PAYED
         ]);
 
-        return self::formatBody(['vip_end_time' => date("Y-m-d H:i:s", $new_vip_end_time)]);
+        return self::formatBody(['vip_end_time' => date("Y-m-d H:i:s", $vip_end_time)]);
     }
 }

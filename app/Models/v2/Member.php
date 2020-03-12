@@ -1295,6 +1295,6 @@ class Member extends BaseModel
             'vip_end_time' => $new_vip_end_time
         ]);
 
-        return true;
+        return $new_vip_end_time;
     }
 }
