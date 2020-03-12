@@ -699,7 +699,6 @@ class Payment extends BaseModel
                     break;
                 case 'juhepay.kjpay':
                     $service = 'pay.kj.web';
-                    $bank_code = '';
                     break;
             }
 
@@ -717,10 +716,6 @@ class Payment extends BaseModel
                 'out_trade_no'      => $order->order_sn,
                 'total_amount'      => $order->order_amount,
             );
-
-            if(!empty($bank_code)){
-                $parameter['bank_code'] = $bank_code;
-            }
 
             $juhepay = new Juhepay();
 
