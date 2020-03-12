@@ -754,9 +754,20 @@ class Payment extends BaseModel
 
         //--------- 聚合支付 notify ----------
         if ($code == 'juhepay.alipay' || $code == 'juhepay.wxpay' || $code == 'juhepay.kjpay') {
-            Log::info('notify:'. json_encode($_POST));
+            if (version_compare(PHP_VERSION, '5.6.0', '<')) {
+                if (!empty($GLOBALS['HTTP_RAW_POST_DATA'])) {
+                    $postStr = $GLOBALS['HTTP_RAW_POST_DATA'];
+                } else {
+                    $postStr = file_get_contents('php://input');
+                }
+            } else {
+                $postStr = file_get_contents('php://input');
+            }
+            Log::info('juhepay.notify:'. $postStr);
 
-            if ($_POST['status'] == 0) {
+            $postArr = json_decode($postStr, true);
+
+            if ($postArr['status'] == 0) {
                 $payment = Pay::where('pay_code', 'juhepay')->first();
 
                 if (!$payment) {
@@ -777,16 +788,16 @@ class Payment extends BaseModel
                 $juhepay_notify = new JuhepayNotify();
 
                 // 验证签名
-                $sign_result = $juhepay_notify->getSignVeryfy($_POST, $juhepay_key);
+                $sign_result = $juhepay_notify->getSignVeryfy($postArr, $juhepay_key);
 
                 if (!$sign_result) {
                     echo 'fail';
                     return false;
                 }
 
-                if ($_POST['err_code'] == 0) {
+                if ($postArr['err_code'] == 0) {
                     // 查询订单
-                    $order = Order::findUnpayedBySN($_POST['out_trade_no']);
+                    $order = Order::findUnpayedBySN($postArr['out_trade_no']);
 
                     // 校验订单是否已经处理过
                     if($order->pay_status == Order::PS_PAYED){
@@ -831,20 +842,17 @@ class Payment extends BaseModel
                         'money_paid' => $order->money_paid,//支付金额
                     ];
                     Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
-                    Log::info('notify_order:'. json_encode($order));
+                    Log::info('notify_is_success::order:'. json_encode($order));
 
-                    Log::info('notify_is_success:'. $_POST['is_success']);
                     echo 'success';
                     return true;
                 } else {
-                    Log::info('notify:'. json_encode($_POST));
-                    echo 'fail';
-                    return false;
+                    echo 'success';
+                    return true;
                 }
             } else {
-                Log::info('notify_not_post:'. json_encode($_POST));
-                echo 'fail';
-                return false;
+                echo 'success';
+                return true;
             }
         }
 
