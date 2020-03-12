@@ -1273,4 +1273,28 @@ class Member extends BaseModel
         }
     }
 
+    //更新VIP时长
+    public static function updateVipTime($uid, $add_time)
+    {
+        if($add_time <= 0){
+            return false;
+        }
+
+        // 查询用户当前vip到期时间
+        $curr_time = time();
+        $user = self::find($uid);
+        $vip_end_time = $user['original_vip_end_time'];
+        // 计算到期时间
+        if($vip_end_time < $curr_time){
+            $new_vip_end_time = $curr_time + $add_time;
+        }else{
+            $new_vip_end_time = $vip_end_time + $add_time;
+        }
+        self::where('user_id', $uid)->update([
+            'user_rank' => 2,
+            'vip_end_time' => $new_vip_end_time
+        ]);
+
+        return true;
+    }
 }

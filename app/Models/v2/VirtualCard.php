@@ -72,20 +72,7 @@ class VirtualCard extends BaseModel
         }
 
         /* 更新用户vip到期时间 */
-        // 查询用户当前vip到期时间
-        $curr_time = time();
-        $user = Member::find($uid);
-        $vip_end_time = $user['original_vip_end_time'];
-        // 计算到期时间
-        if($vip_end_time < $curr_time){
-            $new_vip_end_time = $curr_time + $add_time;
-        }else{
-            $new_vip_end_time = $vip_end_time + $add_time;
-        }
-        Member::where('user_id', $uid)->update([
-            'user_rank' => 2,
-            'vip_end_time' => $new_vip_end_time
-        ]);
+        Member::updateVipTime($uid, $add_time);
 
         /* 修改订单状态 */
         Order::where('order_sn', $order_sn)->update([

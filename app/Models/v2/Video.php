@@ -1362,12 +1362,20 @@ class Video extends BaseModel
         }
     }
 
-    // 获取商品VIP时长
+    // 获取商品VIP时长（根据商品ID）
     public static function getGoodsVipTime($goods_id){
         $goods = self::where('goods_id', $goods_id)->first();
-        $day = $goods['seller_note'];
 
-        $time = $day * 24 * 60 * 60;
+        return self::getGoodsVipTimeByInfo($goods);
+    }
+
+    // 获取商品VIP时长（根据商品信息）
+    public static function getGoodsVipTimeByInfo($goods){
+        $time = 0;
+        $day = $goods['seller_note'];
+        if(is_numeric($day)){
+            $time = $day * 24 * 60 * 60;
+        }
         return $time;
     }
 

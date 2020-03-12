@@ -1293,8 +1293,20 @@ class Payment extends BaseModel
                     $order->order_amount = 0;
                     $order->save();
 
+                    /* 处理虚拟卡商品 */
+                    $result = Order::deal_virtual_card_after_payed($order->order_id);
+                    if($result){
+                        // 修改订单状态
+                        $order->order_status = Order::OS_SPLITED;
+                        $order->pay_status = Order::PS_PAYED;
+                        $order->shipping_status = Order::SS_RECEIVED;
+                        $order->save();
+                    }
+
                     OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
                     AffiliateLog::affiliate($order->order_id);
+                    // 修改pay_log状态
+                    PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
                     Erp::order($order->order_sn);
                     //发送短信
                     $params = [

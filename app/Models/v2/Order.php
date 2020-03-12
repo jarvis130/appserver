@@ -1371,15 +1371,29 @@ class Order extends BaseModel
 
     /**
      * 付款之后处理虚拟卡商品逻辑
-     * @param   array   $order  订单信息
+     * @param   array   $order_id  订单ID
      */
     public static function deal_virtual_card_after_payed($order_id)
     {
         $uid = Token::authorization();
+        $add_time = 0;  // 会员增加时长
+        $is_all_virtual_card = true;  // 是否全部虚拟卡商品
         if ($order = self::where(['user_id' => $uid, 'order_id' => $order_id])->first()) {
-            
+            $order_goods = OrderGoods::where('order_id', $order_id)->get();
+            foreach ($order_goods as $order_good){
+                $goods = Goods::where('goods_id', $order_good['goods_id'])->first();
+                if($goods['is_real'] == 0 && $goods['extension_code'] == 'virtual_card'){
+                    // 增加会员时长
+                    $add_time += Video::getGoodsVipTimeByInfo($goods);
+                }else{
+                    $is_all_virtual_card = false;
+                }
+            }
         }
 
-        return false;
+        /* 更新用户vip到期时间 */
+        Member::updateVipTime($uid, $add_time);
+
+        return $is_all_virtual_card;
     }
 }
