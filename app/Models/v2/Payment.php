@@ -677,7 +677,7 @@ class Payment extends BaseModel
 
         //-----------  聚合支付  -----------//
         if ($code == 'juhepay.alipay' || $code == 'juhepay.wxpay' || $code == 'juhepay.kjpay') {
-            $payment = Pay::getPayment('juhepay');;
+            $payment = Pay::getPayment('juhepay');
 
             if (!$payment) {
                 return self::formatError(self::NOT_FOUND);
