@@ -92,13 +92,17 @@ class Video extends BaseModel
 
     public function getAspectRatioAttribute()
     {
-        return $this->attributes['aspect_ratio'];
+        $result = (float)$this->attributes['aspect_ratio'];
+        if($result == 0){
+            $result = 16/9;
+        }
+        return $result;
     }
 
     public function getPromosAttribute()
     {
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             $data = array();
             return $data;

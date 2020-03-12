@@ -3,6 +3,7 @@
 namespace App\Models\v2;
 
 use App\Models\BaseModel;
+use DB;
 
 class GoodsActors extends BaseModel
 {
@@ -24,6 +25,14 @@ class GoodsActors extends BaseModel
             ->where('comment_type', 1)
             ->groupBy('id_value')
             ->value('rate');
+
+        return intval($data);
+    }
+
+    public static function getVideoTotalByActorId($actorId){
+        $data =  self::select(DB::raw('count(1) as total'))
+            ->where('actor_id', $actorId)
+            ->value('total');
 
         return intval($data);
     }

@@ -16,7 +16,7 @@ class Actors extends BaseModel
 
     protected $visible = [];
 
-    protected $appends = ['actor_id', 'actor_name', 'country', 'actor_avatar', 'actin_total', 'is_attention'];
+    protected $appends = ['actor_id', 'actor_name', 'country', 'actor_avatar', 'actin_total', 'is_attention', 'name_initial'];
 
     protected $guarded = [];
 
@@ -34,6 +34,11 @@ class Actors extends BaseModel
     public function getActorNameAttribute()
     {
         return $this->attributes['actor_name'];
+    }
+
+    public function getNameInitialAttribute()
+    {
+        return $this->attributes['name_initial'];
     }
 
     public function getCountryAttribute()
@@ -54,7 +59,8 @@ class Actors extends BaseModel
 
     public function getActinTotalAttribute()
     {
-        return 0;
+        $total = GoodsActors::getVideoTotalByActorId($this->attributes['actor_id']);
+        return $total;
     }
 
      public function getActorDescAttribute()
@@ -137,9 +143,34 @@ class Actors extends BaseModel
             $model->orderBy('sort_order', 'DESC');
         }
 
-        $data = $model->paginate($per_page)->toArray();
+        $catalogList = [
+            '全部', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+        ];
 
-        return self::formatBody(['actors' => $data['data'],'paged' => self::formatPaged($page, $per_page, $total)]);
+        $alldata = $model->get()->toArray();
+
+        $data = [];
+        foreach ($catalogList as $key => $catalog){
+//            $data[$key]['key'] = $catalog;
+            $result = [];
+            foreach ($alldata as $index => $item){
+                if($catalog == $item['name_initial']){
+                    array_push($result, $item);
+                }
+            }
+            if($key == 0){
+                $data[$key]['actors'] = $alldata;
+            }else{
+                $data[$key]['actors'] = $result;
+            }
+
+        }
+
+        return self::formatBody(['catalogData' => $catalogList,'actorData' => $data]);
+
+//        $data = $model->paginate($per_page)->toArray();
+//
+//        return self::formatBody(['actors' => $data['data'],'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
     public static function getVideoListByActorId(array $attributes)
