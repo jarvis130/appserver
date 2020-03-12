@@ -47,7 +47,7 @@ class Juhepay
 
     public function pay($param, $result_decode = true)
     {
-        if (empty($param['order_no'])) {
+        if (empty($param['out_trade_no'])) {
             return "订单号错误";
         }
 

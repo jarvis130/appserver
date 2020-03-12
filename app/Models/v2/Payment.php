@@ -728,6 +728,10 @@ class Payment extends BaseModel
             //支付
             $pay_result = $juhepay->pay($parameter);
 
+            if(is_string($pay_result)){
+                return self::formatError(self::BAD_REQUEST, $pay_result);
+            }
+
             if($pay_result['status'] != 0){
                 return self::formatError(self::BAD_REQUEST, $pay_result['message']);
             }
