@@ -1257,15 +1257,18 @@ class Payment extends BaseModel
                 $payment = Pay::where('pay_code', 'juhepay')->first();
 
                 if (!$payment) {
-                    return 'fail';
+                    echo 'fail';
+                    return false;
                 }
 
+                $pay_id = $payment->pay_id;
                 $payment_config = $payment->pay_config;
 
                 $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
 
                 if(empty($juhepay_key)){
-                    return 'fail';
+                    echo 'fail';
+                    return false;
                 }
 
                 $juhepay_notify = new JuhepayNotify();
@@ -1274,7 +1277,8 @@ class Payment extends BaseModel
                 $sign_result = $juhepay_notify->getSignVeryfy($_POST, $juhepay_key);
 
                 if (!$sign_result) {
-                    return 'fail';
+                    echo 'fail';
+                    return false;
                 }
 
                 if ($_POST['err_code'] == 0) {
@@ -1283,7 +1287,8 @@ class Payment extends BaseModel
 
                     // 校验订单是否已经处理过
                     if($order->pay_status == Order::PS_PAYED){
-                        return 'fail';
+                        echo 'success';
+                        return true;
                     }
 
                     /* 修改订单状态 */
@@ -1326,14 +1331,17 @@ class Payment extends BaseModel
                     Log::info('notify_order:'. json_encode($order));
 
                     Log::info('notify_is_success:'. $_POST['is_success']);
-                    return 'success';
+                    echo 'success';
+                    return true;
                 } else {
                     Log::info('notify:'. json_encode($_POST));
-                    return 'fail';
+                    echo 'fail';
+                    return false;
                 }
             } else {
                 Log::info('notify_not_post:'. json_encode($_POST));
-                return 'fail';
+                echo 'fail';
+                return false;
             }
         }
     }
