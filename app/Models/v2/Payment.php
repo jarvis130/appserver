@@ -677,14 +677,16 @@ class Payment extends BaseModel
 
         //-----------  聚合支付  -----------//
         if ($code == 'juhepay.alipay' || $code == 'juhepay.wxpay' || $code == 'juhepay.kjpay') {
-            $payment = Pay::checkConfig('juhepay');;
+            $payment = Pay::getPayment('juhepay');;
 
             if (!$payment) {
                 return self::formatError(self::NOT_FOUND);
             }
 
-            $juhepay_partner = Pay::getConfigValueByName($payment, 'juhepay_partner');
-            $juhepay_key = Pay::getConfigValueByName($payment, 'juhepay_key');
+            $payment_config = $payment->pay_config;
+
+            $juhepay_partner = Pay::getConfigValueByName($payment_config, 'juhepay_partner');
+            $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
 
             if(empty($juhepay_partner) || empty($juhepay_key)){
                 return self::formatError(self::UNKNOWN_ERROR);
@@ -1254,7 +1256,9 @@ class Payment extends BaseModel
                     return 'fail';
                 }
 
-                $juhepay_key = Pay::getConfigValueByName($payment, 'juhepay_key');
+                $payment_config = $payment->pay_config;
+
+                $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
 
                 if(empty($juhepay_key)){
                     return 'fail';

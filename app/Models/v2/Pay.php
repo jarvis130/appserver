@@ -22,6 +22,12 @@ class Pay extends BaseModel
         return false;
     }
 
+    public static function getPayment($pay_code)
+    {
+        $payment = self::where('pay_code', $pay_code)->where('enabled', '1')->first();
+        return $payment;
+    }
+
     public static function getConfigValueByName($pay_config, $name)
     {
         $result = unserialize($pay_config);
