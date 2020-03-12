@@ -41,8 +41,6 @@ class Juhepay
         $signPars .= '&key=' . $key;
 
         $sign = strtoupper(md5($signPars));
-        //debug信息
-        $this->_setDebugInfo('md5签名:'.$signPars . ' => sign:' .$sign);
 
         return $sign;
     }
@@ -114,13 +112,5 @@ class Juhepay
         }
         curl_close($ch);
         return $result;
-    }
-
-    /**
-     *设置debug信息
-     */
-    public function _setDebugInfo($debugInfo)
-    {
-        $this->debugInfo = PHP_EOL.$this->debugInfo.$debugInfo.PHP_EOL;
     }
 }
