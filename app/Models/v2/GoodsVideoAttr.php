@@ -33,12 +33,12 @@ class GoodsVideoAttr extends BaseModel
 
     public function getAttrValue1Attribute()
     {
-        return $this->attr_value1;
+        return $this->attributes['attr_value1'];
     }
 
     public function getAttrValue2Attribute()
     {
-        return $this->attr_value2;
+        return $this->attributes['attr_value2'];
     }
 
 
