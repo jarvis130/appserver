@@ -665,15 +665,15 @@ class Video extends BaseModel
         if(!empty($product_data['is_real']) && ($product_data['is_real'] == '2')){
             //判断当前用户是否已经收藏该视频
             $uid = Token::authorization();
-            $count = CollectGoods::where('user_id', $uid)->count();
-            $product_data['is_collect'] = $count;
-            //判断发布者是否被关注
-            $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $product_data['pub_id']])->count();
-            if($num == 1){
-                $product_data['is_attention'] = 1;
-            }else{
-                $product_data['is_attention'] = 0;
-            }
+//            $count = CollectGoods::where('user_id', $uid)->count();
+//            $product_data['is_collect'] = $count;
+//            //判断发布者是否被关注
+//            $num = UserAttention::where(['user_id' => $uid, 'att_user_id' => $product_data['pub_id']])->count();
+//            if($num == 1){
+//                $product_data['is_attention'] = 1;
+//            }else{
+//                $product_data['is_attention'] = 0;
+//            }
             //播放数量
             $total = VideoWatchLog::where('video_id', $product)
                 ->groupby('video_id')
@@ -681,17 +681,15 @@ class Video extends BaseModel
             $product_data['play_total'] = $total;    
             //属性Breadcrumb
             $v1='';$v2='';
-            $attrResult = GoodsAttr::where('goods_id', $product)
-                ->get();
-            foreach ($attrResult as $key => $attr){
-                if($attr['attr_id'] == 38){
-                    $v1 = $attr['attr_value'];
-                }
-                if($attr['attr_id'] == 45){
-                    $v2 = $attr['attr_value'];
-                }
+            $attrResult = GoodsVideoAttr::where('goods_id', $product)->first();
+            if($attrResult){
+                $v1 = $attrResult['attr_value1'];
+                $v2 = $attrResult['attr_value2'];
+                $product_data['breadcrumb'] = $v1.' / '.$v2;
+            }else{
+                $product_data['breadcrumb'] = '';
             }
-            $product_data['breadcrumb'] = $v2.' / '.$v1;
+
         }
         
         if (!$data) {
