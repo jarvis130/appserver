@@ -1375,10 +1375,11 @@ class Order extends BaseModel
      */
     public static function deal_virtual_card_after_payed($order_id)
     {
-        $uid = Token::authorization();
         $add_time = 0;  // 会员增加时长
         $is_all_virtual_card = true;  // 是否全部虚拟卡商品
-        if ($order = self::where(['user_id' => $uid, 'order_id' => $order_id])->first()) {
+        if ($order = self::where(['order_id' => $order_id])->first()) {
+            $uid = $order->user_id;
+
             $order_goods = OrderGoods::where('order_id', $order_id)->get();
             foreach ($order_goods as $order_good){
                 $goods = Goods::where('goods_id', $order_good['goods_id'])->first();
@@ -1389,10 +1390,10 @@ class Order extends BaseModel
                     $is_all_virtual_card = false;
                 }
             }
-        }
 
-        /* 更新用户vip到期时间 */
-        Member::updateVipTime($uid, $add_time);
+            /* 更新用户vip到期时间 */
+            Member::updateVipTime($uid, $add_time);
+        }
 
         return $is_all_virtual_card;
     }
