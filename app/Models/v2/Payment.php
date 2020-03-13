@@ -795,7 +795,7 @@ class Payment extends BaseModel
                     return false;
                 }
 
-                if ($postArr['err_code'] == 0) {
+                if ($postArr['result_code'] == 0) {
                     // 查询订单
                     $order = Order::findUnpayedBySN($postArr['out_trade_no']);
 
