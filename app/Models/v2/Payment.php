@@ -796,11 +796,9 @@ class Payment extends BaseModel
                 }
 
                 if ($postArr['result_code'] == 0) {
-                    // 查询订单
+                    // 查询未付款订单
                     $order = Order::findUnpayedBySN($postArr['out_trade_no']);
-
-                    // 校验订单是否已经处理过
-                    if($order->pay_status == Order::PS_PAYED){
+                    if(!$order){
                         echo 'success';
                         return true;
                     }
