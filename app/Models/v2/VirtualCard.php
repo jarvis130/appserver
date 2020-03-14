@@ -81,6 +81,7 @@ class VirtualCard extends BaseModel
             'pay_status' => Order::PS_PAYED
         ]);
 
-        return self::formatBody(['vip_end_time' => date("Y-m-d H:i:s", $vip_end_time)]);
+        $user = Member::where('user_id', $uid)->first();
+        return self::formatBody(['user' => $user]);
     }
 }
