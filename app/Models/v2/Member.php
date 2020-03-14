@@ -1098,13 +1098,16 @@ class Member extends BaseModel
      * 使用移动设备码登录
      * @param array $attributes
      */
-    public static function signinByDevice(array $attributes){
+    public static function signinByDevice(array $attributes, $os, $ip){
         extract($attributes);
         $info = null;
         $userDevice = UserDevice::where('device_id', $device_id)->first();
         if($userDevice){
             $userId = $userDevice['user_id'];
             $model = Member::where('user_id', $userId)->first();
+            $model->last_login = time();
+            $model->last_time = time();
+            $model->save();
         }else{
             $username = self::genUsername('ecs');
             $email = $username.'@qq.com';

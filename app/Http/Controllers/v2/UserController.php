@@ -314,19 +314,18 @@ class UserController extends Controller
     /**
      * POST /user/signin-device
      */
-    public function signinByDevice()
+    public function signinByDevice(Request $request)
     {
         $rules = [
-            'device_id'  => 'required|string',
-            'os'     => 'string',
-            'ip'     => 'string',
+            'device_id'  => 'required|string'
         ];
 
         if ($error = $this->validateInput($rules)) {
             return $error;
         }
-
-        $data = Member::signinByDevice($this->validated);
+        $os = $request->input('os');
+        $ip = $request->input('ip');
+        $data = Member::signinByDevice($this->validated, $os, $ip);
         return $this->json($data);
     }
 
