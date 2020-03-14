@@ -96,8 +96,14 @@ class Payment extends BaseModel
                 // 聚合支付
                 if ($arr = Pay::where(['enabled' => 1, 'pay_code' => 'juhepay'])->select('pay_code as code','pay_name as name','pay_desc as desc', 'pay_config as config')->first()) {
                     $arr = $arr->toArray();
+                    $payment_config = $arr['config'];
+                    unset($arr['config']);
 
-                    $juhepay_pay_method = Pay::getConfigValueByName($arr['config'], 'juhepay_pay_method');
+                    // 获取订单金额
+                    $orderinfo = Order::where(['order_id'=>$order])->first();
+                    $amount = $orderinfo->order_amount;
+
+                    $juhepay_pay_method = Pay::getConfigValueByName($payment_config, 'juhepay_pay_method');
                     if ($juhepay_pay_method) {
                         $name = $arr['name'];
                         // 获取支持的支付方式
@@ -105,21 +111,47 @@ class Payment extends BaseModel
                         foreach ($pay_methods as $pay_method){
                             switch ($pay_method){
                                 case '1':
+                                    $quota_key = 'juhepay_alipay_quota';
                                     $arr['code'] = 'juhepay.alipay';
                                     $arr['name'] = $name . '-支付宝';
                                     break;
                                 case '2':
+                                    $quota_key = 'juhepay_wxpay_quota';
                                     $arr['code'] = 'juhepay.wxpay';
                                     $arr['name'] = $name . '-微信支付';
                                     break;
                                 case '3':
+                                    $quota_key = 'juhepay_kjpay_quota';
                                     $arr['code'] = 'juhepay.kjpay';
                                     $arr['name'] = $name . '-快捷支付';
                                     break;
                             }
 
-                            unset($arr['config']);
-                            array_push($model, $arr);
+                            $usable = true; // 当前支付方式是否可用
+
+                            // 校验金额
+                            $quota = Pay::getConfigValueByName($payment_config, $quota_key);
+                            if(!empty($quota)){
+                                if(strpos($quota,'-')){  // 范围限定
+                                    $quota_arr = explode('-', $quota);
+                                    $quota_min = min($quota_arr);
+                                    $quota_max = max($quota_arr);
+                                    if($amount < $quota_min || $amount > $quota_max){
+                                        $usable = false;
+                                    }
+                                }else{  // 值限定
+                                    $quota_arr = explode(',', $quota);
+                                    if(!in_array($amount, $quota_arr)){
+                                        $usable = false;
+                                    }
+                                }
+                            }
+
+                            if($usable){
+                                array_push($model, $arr);
+                            }
+
+                            unset($arr);
                         }
                     }
                 }
