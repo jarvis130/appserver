@@ -758,7 +758,7 @@ class Video extends BaseModel
         }
 
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             $volume_price  = '0'; //商品优惠价格
         } 
@@ -1334,15 +1334,11 @@ class Video extends BaseModel
         if ($num == 0) {
             //属性Breadcrumb
             $v1='';$v2='';
-            $attrResult = GoodsAttr::where('goods_id', $video_id)
-                ->get();
-            foreach ($attrResult as $key => $attr){
-                if($attr['attr_id'] == 38){
-                    $v1 = $attr['attr_value'];
-                }
-                if($attr['attr_id'] == 45){
-                    $v2 = $attr['attr_value'];
-                }
+
+            $attrResult = GoodsVideoAttr::where('goods_id', $video_id)->first();
+            if($attrResult){
+                $v1 = $attrResult['attr_value1'];
+                $v2 = $attrResult['attr_value2'];
             }
 
             $model = new VideoWatchLog;

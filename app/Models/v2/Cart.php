@@ -975,7 +975,7 @@ class Cart extends BaseModel
     public static function compute_discount($order_products)
     {
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             return 0;
         }
@@ -1123,7 +1123,7 @@ class Cart extends BaseModel
     public static function compute_discount_check($order_products)
     {
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             return 0;
         }
@@ -1209,7 +1209,7 @@ class Cart extends BaseModel
     public static function compute_purchase_discount($order_products)
     {
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             return 0;
         }
@@ -1295,7 +1295,7 @@ class Cart extends BaseModel
     public static function compute_discount_amount($cart_good_ids)
     {
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             return 0;
         }

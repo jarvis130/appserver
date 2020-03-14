@@ -442,7 +442,7 @@ class Goods extends BaseModel
     public function getPromosAttribute()
     {
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             $data = array();
             return $data;
@@ -672,7 +672,7 @@ class Goods extends BaseModel
         }
 
         $user_agent = Header::getUserAgent();
-        Log::debug("平台记录".json_encode($user_agent));
+//        Log::debug("平台记录".json_encode($user_agent));
         if ($user_agent == array('Platform' => 'Wechat')) {
             $volume_price  = '0'; //商品优惠价格
         } 
