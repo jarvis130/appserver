@@ -104,10 +104,11 @@ class Payment extends BaseModel
                     $amount = $orderinfo->order_amount;
 
                     $juhepay_pay_method = Pay::getConfigValueByName($payment_config, 'juhepay_pay_method');
+                    $juhepay_pay_method = trim($juhepay_pay_method);
                     if ($juhepay_pay_method) {
                         $name = $arr['name'];
                         // 获取支持的支付方式
-                        $pay_methods = explode(',', trim($juhepay_pay_method));
+                        $pay_methods = explode(',', $juhepay_pay_method);
                         foreach ($pay_methods as $pay_method){
                             switch ($pay_method){
                                 case '1':
@@ -131,7 +132,8 @@ class Payment extends BaseModel
 
                             // 校验金额
                             $quota = Pay::getConfigValueByName($payment_config, $quota_key);
-                            if(!empty($quota)){
+                            $quota = trim($quota);
+                            if($quota){
                                 if(strpos($quota,'-')){  // 范围限定
                                     $quota_arr = explode('-', $quota);
                                     $quota_min = min($quota_arr);
