@@ -152,8 +152,6 @@ class Payment extends BaseModel
                             if($usable){
                                 array_push($model, $arr);
                             }
-
-                            unset($arr);
                         }
                     }
                 }
