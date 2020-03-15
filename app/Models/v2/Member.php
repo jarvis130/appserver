@@ -1029,12 +1029,11 @@ class Member extends BaseModel
 
     public function getVipEndTimeAttribute()
     {
-        if($this->attributes['vip_end_time'] > 0){
+        if($this->attributes['vip_end_time'] >= time()){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
             return '請開通會員';
         }
-
     }
 
     public function getOriginalVipEndTimeAttribute()
