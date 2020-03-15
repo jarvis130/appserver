@@ -86,7 +86,9 @@ return [
 
     'redis' => [
 
-        'cluster' => env('REDIS_CLUSTER', false),
+//        'cluster' => env('REDIS_CLUSTER', false),
+
+        'client' => 'phpredis',
 
         'default' => [
             'host'     => env('REDIS_HOST', '127.0.0.1'),
