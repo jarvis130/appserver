@@ -1030,7 +1030,7 @@ class Member extends BaseModel
         if($this->attributes['vip_end_time'] != null){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
-            return '-';
+            return $this->attributes['vip_end_time'];
         }
 
     }
@@ -1130,7 +1130,8 @@ class Member extends BaseModel
                 'sex' => 0,
                 'alias' => $username,
                 'mobile_phone' => '',
-                'rank_points' => 0
+                'rank_points' => 0,
+                'vip_end_time' => time()
             ];
 
             if ($model = self::create($data)) {
