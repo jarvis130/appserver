@@ -239,6 +239,14 @@ class Member extends BaseModel
             $user['is_affiliate'] = AffiliateLog::checkOpen();
             //
             $userRank = $user['rank']['id'];
+            $vip_end_time = $user['original_vip_end_time'];
+
+            // 如果VIP已到期，则将userRank设置为1
+            if($userRank >= 2 && $vip_end_time <= time()){
+                $userRank = 1;
+                $user['rank']['name'] = $user['rank']['name'] . '(已到期)';
+            }
+
             $watchTimes = 0;
             $watchedTimes = 0;//已经观看次数
             if($userRank < 2){
@@ -1164,6 +1172,14 @@ class Member extends BaseModel
         $info = $model->toArray();
         //
         $userRank = $info['rank']['id'];
+        $vip_end_time = $info['original_vip_end_time'];
+
+        // 如果VIP已到期，则将userRank设置为1
+        if($userRank >= 2 && $vip_end_time <= time()){
+            $userRank = 1;
+            $info['rank']['name'] = $info['rank']['name'] . '(已到期)';
+        }
+
         $watchTimes = 0;
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2){

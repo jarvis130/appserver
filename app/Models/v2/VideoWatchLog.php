@@ -56,6 +56,13 @@ class VideoWatchLog extends BaseModel
         $uid = Token::authorization();
         $user = Member::where('user_id', $uid)->first();
         $userRank = $user['user_rank'];
+        $vip_end_time = $user['vip_end_time'];
+
+        // 如果VIP已到期，则将userRank设置为1
+        if($userRank >= 2 && $vip_end_time <= time()){
+            $userRank = 1;
+        }
+
         if($userRank == 0){
             $times = 5;
         }elseif($userRank == 1){
