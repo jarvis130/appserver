@@ -176,9 +176,8 @@ class Actors extends BaseModel
     public static function getVideoListByActorId(array $attributes)
     {
         extract($attributes);
-        $model = self::where('actor_id', $actor_id)->with('videos');
-        $total = $model->count();
-        $data = $model->paginate($per_page)->toArray();
+        $total = self::where('actor_id', $actor_id)->count();
+        $data = self::where('actor_id', $actor_id)->with('videos')->paginate($per_page)->toArray();
 
         $actorInfo = $data['data'][0];
         $videoList = $data['data'][0]['videos'];
