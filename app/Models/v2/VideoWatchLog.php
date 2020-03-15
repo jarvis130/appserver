@@ -58,6 +58,10 @@ class VideoWatchLog extends BaseModel
         $userRank = $user['user_rank'];
         $vip_end_time = $user['vip_end_time'];
 
+        if($userRank >= 2 && $vip_end_time >= time()){
+            return self::formatBody(['times' => 1]);
+        }
+
         // 如果VIP已到期，则将userRank设置为1
         if($userRank >= 2 && $vip_end_time < time()){
             $userRank = 1;
