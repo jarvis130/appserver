@@ -10,6 +10,7 @@ use \DB;
 use App\Services\Shopex\Erp;
 use App\Services\Shopex\Sms;
 use App\Helper\Header;
+use Illuminate\Support\Facades\Redis;
 use Log;
 use App\Services\Shopex\Logistics;
 
@@ -309,11 +310,23 @@ class Video extends BaseModel
         extract($attributes);
         $category_id = isset($category_id) ? $category_id : '';
 
-        return self::formatBody([
-            'hot_products'      => count(self::getRecommendGoods('is_hot', $category_id)) == 0 ? null : self::getRecommendGoods('is_hot', $category_id),
-            'recently_products' => count(self::getRecommendGoods('is_new', $category_id)) == 0 ? null : self::getRecommendGoods('is_new', $category_id),
-            'best_products'     => count(self::getRecommendGoods('is_best', $category_id)) == 0 ? null : self::getRecommendGoods('is_best', $category_id),
-        ]);
+        $key = 'video:home:list';
+
+        if(Redis::exists($key)){
+            $data = json_decode(Redis::get($key), true);
+        }else{
+            $hot_products = self::getRecommendGoods('is_hot', $category_id);
+            $recently_products = self::getRecommendGoods('is_new', $category_id);
+            $best_products = self::getRecommendGoods('is_best', $category_id);
+            $data = [
+                'hot_products'      => count($hot_products) == 0 ? null : $hot_products,
+                'recently_products' => count($recently_products) == 0 ? null : $recently_products,
+                'best_products'     => count($best_products) == 0 ? null : $best_products,
+            ];
+            Redis::set($key, json_encode($data));
+        }
+
+        return self::formatBody($data);
     }
 
     public static function getRecommendGoods($type, $category_id = '')
@@ -618,53 +631,58 @@ class Video extends BaseModel
     {
         extract($attributes);
 
-        $model = Video::where(['is_delete' => 0, 'goods_id' => $product]);
+        $key = 'video:info:' . $product;
 
-        $data = $model->with(['properties','propertie_info', 'tags', 'stock', 'attachments', 'actors'])->first();
-        //保证属性排序正确
-        $product_data = $data->toArray();
+        if(Redis::exists($key)){
+            $product_data = json_decode(Redis::get($key), true);
+        }else{
+            $model = Video::where(['is_delete' => 0, 'goods_id' => $product]);
 
-        if(!empty($product_data['properties']) && !empty($product_data['stock'])){
-            $goods_attr = $product_data['stock'][0]['goods_attr'];
-            $attr_ids = explode('|', $goods_attr);
-            $attr = GoodsAttr::whereIn('goods_attr_id',$attr_ids)->get();
-            $new_attr = $_attr = [];
-            foreach ($attr as $key => $value) {
-                $_attr[$value['id']] = $value['attr_id'];
+            $data = $model->with(['properties','propertie_info', 'tags', 'stock', 'attachments', 'actors'])->first();
+            //保证属性排序正确
+            $product_data = $data->toArray();
+
+            if(!empty($product_data['properties']) && !empty($product_data['stock'])){
+                $goods_attr = $product_data['stock'][0]['goods_attr'];
+                $attr_ids = explode('|', $goods_attr);
+                $attr = GoodsAttr::whereIn('goods_attr_id',$attr_ids)->get();
+                $new_attr = $_attr = [];
+                foreach ($attr as $key => $value) {
+                    $_attr[$value['id']] = $value['attr_id'];
+                }
+                foreach ($attr_ids as $key => $value) {
+                    $new_attr[] = $_attr[$value];
+                }
+                $properties = [];
+                foreach ($product_data['properties'] as $key => $item) {
+                    $properties[$item['id']] = $item;
+                }
+                foreach ($new_attr as $key => $value) {
+                    $product_data['properties'][$key] = $properties[$value];
+                }
             }
-            foreach ($attr_ids as $key => $value) {
-                $new_attr[] = $_attr[$value];
+
+            //关联视频
+            $row = LinkGoods::select('goods.*')
+                ->from('link_goods as lg')
+                ->leftJoin('goods as goods', 'goods.goods_id', '=', 'lg.link_goods_id')
+                ->where('lg.goods_id', $product)
+                ->get();
+
+            $linkModel = array();
+            foreach ($row AS $key => $val)
+            {
+                $linkModel[$key]['goods_id'] = $val['goods_id'];
+                $linkModel[$key]['goods_name'] = $val['goods_name'];
+                $linkModel[$key]['goods_thumb'] = formatPhoto($val['goods_thumb']);
             }
-            $properties = [];
-            foreach ($product_data['properties'] as $key => $item) {
-                $properties[$item['id']] = $item;
-            }
-            foreach ($new_attr as $key => $value) {
-                $product_data['properties'][$key] = $properties[$value];
-            }
-        }
 
-        //关联视频
-        $row = LinkGoods::select('goods.*')
-            ->from('link_goods as lg')
-            ->leftJoin('goods as goods', 'goods.goods_id', '=', 'lg.link_goods_id')
-            ->where('lg.goods_id', $product)
-            ->get();
+            $product_data['link_goods'] = $linkModel;
 
-        $linkModel = array();
-        foreach ($row AS $key => $val)
-        {
-            $linkModel[$key]['goods_id'] = $val['goods_id'];
-            $linkModel[$key]['goods_name'] = $val['goods_name'];
-            $linkModel[$key]['goods_thumb'] = formatPhoto($val['goods_thumb']);
-        }
-
-        $product_data['link_goods'] = $linkModel;
-
-        //如果是视频
-        if(!empty($product_data['is_real']) && ($product_data['is_real'] == '2')){
-            //判断当前用户是否已经收藏该视频
-            $uid = Token::authorization();
+            //如果是视频
+            if(!empty($product_data['is_real']) && ($product_data['is_real'] == '2')){
+                //判断当前用户是否已经收藏该视频
+                $uid = Token::authorization();
 //            $count = CollectGoods::where('user_id', $uid)->count();
 //            $product_data['is_collect'] = $count;
 //            //判断发布者是否被关注
@@ -674,38 +692,42 @@ class Video extends BaseModel
 //            }else{
 //                $product_data['is_attention'] = 0;
 //            }
-            //播放数量
-            $total = VideoWatchLog::where('video_id', $product)
-                ->groupby('video_id')
-                ->count();
-            $product_data['play_total'] = $total;    
-            //属性Breadcrumb
-            $v1='';$v2='';
-            $attrResult = GoodsVideoAttr::where('goods_id', $product)->first();
-            if($attrResult){
-                $v1 = $attrResult['attr_value1'];
-                $v2 = $attrResult['attr_value2'];
-                $product_data['breadcrumb'] = $v1.' / '.$v2;
-            }else{
-                $product_data['breadcrumb'] = '';
+                //播放数量
+                $total = VideoWatchLog::where('video_id', $product)
+                    ->groupby('video_id')
+                    ->count();
+                $product_data['play_total'] = $total;
+                //属性Breadcrumb
+                $v1='';$v2='';
+                $attrResult = GoodsVideoAttr::where('goods_id', $product)->first();
+                if($attrResult){
+                    $v1 = $attrResult['attr_value1'];
+                    $v2 = $attrResult['attr_value2'];
+                    $product_data['breadcrumb'] = $v1.' / '.$v2;
+                }else{
+                    $product_data['breadcrumb'] = '';
+                }
+
             }
 
-        }
-        
-        if (!$data) {
-            return self::formatError(self::NOT_FOUND);
-        }
+            if (!$data) {
+                return self::formatError(self::NOT_FOUND);
+            }
 
-        if (!$data->is_on_sale) {
-            return self::formatError(self::BAD_REQUEST, trans('message.good.off_sale'));
-        }
-        // $current_price = UserRank::getMemberRankPriceByGid($product);
-        //$data['promos'] = FavourableActivity::getPromoByGoods($product,$data->cat_id, $data->brand_id);
+            if (!$data->is_on_sale) {
+                return self::formatError(self::BAD_REQUEST, trans('message.good.off_sale'));
+            }
+            // $current_price = UserRank::getMemberRankPriceByGid($product);
+            //$data['promos'] = FavourableActivity::getPromoByGoods($product,$data->cat_id, $data->brand_id);
 
 //        if ($data->promote_price == 0) {
 //            $current_price = UserRank::getMemberRankPriceByGid($product);
 //            return self::formatBody(['product' => array_merge($data->toArray(), ['current_price' => $current_price])]);
 //        }
+
+            Redis::set($key, json_encode($product_data));
+        }
+
         return self::formatBody(['product' => $product_data]);
     }
 

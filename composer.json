@@ -12,7 +12,9 @@
         "illuminate/mail": "^5.2",
         "orumad/lumen-config-cache": "^1.0",
         "illuminate/filesystem": "^5.5",
-        "league/flysystem": "^1.0"
+        "league/flysystem": "^1.0",
+        "illuminate/redis": "^5.5",
+        "predis/predis": "^1.1"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",
@@ -31,5 +33,11 @@
             "tests/",
             "database/"
         ]
+    },
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://mirrors.aliyun.com/composer/"
+        }
     }
 }
