@@ -1030,7 +1030,7 @@ class Member extends BaseModel
         if($this->attributes['vip_end_time'] != null){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
-            return $this->attributes['vip_end_time'];
+            return '-';
         }
 
     }
@@ -1130,8 +1130,7 @@ class Member extends BaseModel
                 'sex' => 0,
                 'alias' => $username,
                 'mobile_phone' => '',
-                'rank_points' => 0,
-                'vip_end_time' => time()
+                'rank_points' => 0
             ];
 
             if ($model = self::create($data)) {
@@ -1199,7 +1198,6 @@ class Member extends BaseModel
         $info['watch_times'] = $watchTimes;
         $info['watched_times'] = $watchedTimes;
         //
-        UserRegStatus::toUpdate($model->user_id, 1);
         $token = Token::encode(['uid' => $model->user_id]);
         UserRegStatus::toUpdate($model->user_id, 1);
         return self::formatBody(['token' => $token, 'user' => $info]);
