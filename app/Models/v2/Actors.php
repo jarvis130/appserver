@@ -176,11 +176,15 @@ class Actors extends BaseModel
     public static function getVideoListByActorId(array $attributes)
     {
         extract($attributes);
-        $total = self::where('actor_id', $actor_id)->count();
-        $data = self::where('actor_id', $actor_id)->with('videos')->paginate($per_page)->toArray();
 
-        $actorInfo = $data['data'][0];
-        $videoList = $data['data'][0]['videos'];
+        $actorInfo = self::where('actor_id', $actor_id)->first();
+
+        $total = GoodsActors::where('actor_id', $actor_id)->count();
+        $data = Video::from('goods as g')
+            ->leftjoin('goods_actor as a', 'a.goods_id','=','g.goods_id')
+            ->where('a.actor_id', $actor_id)
+            ->paginate($per_page)->toArray();
+        $videoList = $data['data'];
         return self::formatBody(['actorInfo' => $actorInfo, 'videoList'=>$videoList, 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
