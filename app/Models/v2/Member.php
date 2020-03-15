@@ -242,9 +242,8 @@ class Member extends BaseModel
             $vip_end_time = $user['original_vip_end_time'];
 
             // 如果VIP已到期，则将userRank设置为1
-            if($userRank >= 2 && $vip_end_time <= time()){
+            if($userRank >= 2 && $vip_end_time < time()){
                 $userRank = 1;
-                $user['rank']['name'] = $user['rank']['name'] . '(已到期)';
             }
 
             $watchTimes = 0;
@@ -1006,7 +1005,10 @@ class Member extends BaseModel
     {
         $model = UserRank::findRankByUid($this->attributes['user_id']);
         if ($model) {
-            return $model->toArray();
+            $arr = $model->toArray();
+            if($arr['id'] >= 2 && $this->attributes['vip_end_time'] < time()){
+                $arr['name'] = $arr['name'] . '(已到期)';
+            }
         } else {
             //如果没有等级　默认返回注册用户
             $arr = array(
@@ -1016,8 +1018,8 @@ class Member extends BaseModel
                 'score_min'=> 0,
                 'score_max'=> 0,
             );
-            return $arr;
         }
+        return $arr;
     }
 
     public function getGenderAttribute()
@@ -1175,9 +1177,8 @@ class Member extends BaseModel
         $vip_end_time = $info['original_vip_end_time'];
 
         // 如果VIP已到期，则将userRank设置为1
-        if($userRank >= 2 && $vip_end_time <= time()){
+        if($userRank >= 2 && $vip_end_time < time()){
             $userRank = 1;
-            $info['rank']['name'] = $info['rank']['name'] . '(已到期)';
         }
 
         $watchTimes = 0;
