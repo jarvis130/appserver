@@ -315,10 +315,13 @@ class Video extends BaseModel
         if(Redis::exists($key)){
             $data = json_decode(Redis::get($key), true);
         }else{
+            $hot_products = self::getRecommendGoods('is_hot', $category_id);
+            $recently_products = self::getRecommendGoods('is_new', $category_id);
+            $best_products = self::getRecommendGoods('is_best', $category_id);
             $data = [
-                'hot_products'      => count(self::getRecommendGoods('is_hot', $category_id)) == 0 ? null : self::getRecommendGoods('is_hot', $category_id),
-                'recently_products' => count(self::getRecommendGoods('is_new', $category_id)) == 0 ? null : self::getRecommendGoods('is_new', $category_id),
-                'best_products'     => count(self::getRecommendGoods('is_best', $category_id)) == 0 ? null : self::getRecommendGoods('is_best', $category_id),
+                'hot_products'      => count($hot_products) == 0 ? null : $hot_products,
+                'recently_products' => count($recently_products) == 0 ? null : $recently_products,
+                'best_products'     => count($best_products) == 0 ? null : $best_products,
             ];
             Redis::set($key, json_encode($data));
         }
