@@ -239,6 +239,14 @@ class Member extends BaseModel
             $user['is_affiliate'] = AffiliateLog::checkOpen();
             //
             $userRank = $user['rank']['id'];
+            $vip_end_time = $user['original_vip_end_time'];
+
+            // 如果VIP已到期，则将userRank设置为1
+            if($userRank >= 2 && $vip_end_time <= time()){
+                $userRank = 1;
+                $user['rank']['name'] = $user['rank']['name'] . '(已到期)';
+            }
+
             $watchTimes = 0;
             $watchedTimes = 0;//已经观看次数
             if($userRank < 2){
@@ -1022,7 +1030,7 @@ class Member extends BaseModel
         if($this->attributes['vip_end_time'] != null){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
-            return $this->attributes['vip_end_time'];
+            return '-';
         }
 
     }
@@ -1122,8 +1130,7 @@ class Member extends BaseModel
                 'sex' => 0,
                 'alias' => $username,
                 'mobile_phone' => '',
-                'rank_points' => 0,
-                'vip_end_time' => time()
+                'rank_points' => 0
             ];
 
             if ($model = self::create($data)) {
@@ -1164,6 +1171,14 @@ class Member extends BaseModel
         $info = $model->toArray();
         //
         $userRank = $info['rank']['id'];
+        $vip_end_time = $info['original_vip_end_time'];
+
+        // 如果VIP已到期，则将userRank设置为1
+        if($userRank >= 2 && $vip_end_time <= time()){
+            $userRank = 1;
+            $info['rank']['name'] = $info['rank']['name'] . '(已到期)';
+        }
+
         $watchTimes = 0;
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2){
@@ -1183,7 +1198,6 @@ class Member extends BaseModel
         $info['watch_times'] = $watchTimes;
         $info['watched_times'] = $watchedTimes;
         //
-        UserRegStatus::toUpdate($model->user_id, 1);
         $token = Token::encode(['uid' => $model->user_id]);
         UserRegStatus::toUpdate($model->user_id, 1);
         return self::formatBody(['token' => $token, 'user' => $info]);
