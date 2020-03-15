@@ -1114,7 +1114,7 @@ class Member extends BaseModel
             $userId = $userDevice['user_id'];
             $model = Member::where('user_id', $userId)->first();
             $model->last_login = time();
-            $model->last_time = time();
+            $model->last_time = date('Y-m-d H:i:s');
             $model->save();
         }else{
             $username = self::genUsername('ecs');
