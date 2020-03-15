@@ -37,7 +37,7 @@ class VideoWatchLog extends BaseModel
         $goods = [];
         foreach ($data['data'] as $key => $value) {
             $goods[$key]['goods'] = $data['data'][$key]['goods'];
-            $goods[$key]['add_time'] = date('Y-m-s', $data['data'][$key]['add_time']);
+            $goods[$key]['add_time'] = date('Y-m-d', $data['data'][$key]['add_time']);
             $goods[$key]['breadcrumb'] = $data['data'][$key]['breadcrumb'];
         }
 
