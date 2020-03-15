@@ -180,7 +180,9 @@ class Actors extends BaseModel
         $total = $model->count();
         $data = $model->paginate($per_page)->toArray();
 
-        return self::formatBody(['actor' => $data['data'], 'paged' => self::formatPaged($page, $per_page, $total)]);
+        $actorInfo = $data['data'][0];
+        $videoList = $data['data'][0]['videos'];
+        return self::formatBody(['actorInfo' => $actorInfo, 'videoList'=>$videoList, 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
     public function videos()
