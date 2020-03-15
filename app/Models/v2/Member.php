@@ -244,6 +244,8 @@ class Member extends BaseModel
             // 如果VIP已到期，则将userRank设置为1
             if($userRank >= 2 && $vip_end_time < time()){
                 $userRank = 1;
+                self::where('user_id', $uid)->update(['user_rank' => $userRank]);
+                $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
             }
 
             $watchTimes = 0;
@@ -1006,9 +1008,6 @@ class Member extends BaseModel
         $model = UserRank::findRankByUid($this->attributes['user_id']);
         if ($model) {
             $arr = $model->toArray();
-            if($arr['id'] >= 2 && $this->attributes['vip_end_time'] < time()){
-                $arr['name'] = $arr['name'] . '(已到期)';
-            }
         } else {
             //如果没有等级　默认返回注册用户
             $arr = array(
@@ -1131,12 +1130,12 @@ class Member extends BaseModel
                 'sex' => 0,
                 'alias' => $username,
                 'mobile_phone' => '',
-                'rank_points' => 0
+                'rank_points' => 0,
+                'vip_end_time' => 0
             ];
 
             if ($model = self::create($data)) {
                 $userId = $model->user_id;
-                $model = Member::where('user_id', $userId)->first();
                 // 插入设备信息
                 if(! $userDeviceModel = UserDevice::createDevice($userId, $device_id, $os, $ip,'')){
                     return self::formatError(self::UNKNOWN_ERROR);
@@ -1178,6 +1177,8 @@ class Member extends BaseModel
         // 如果VIP已到期，则将userRank设置为1
         if($userRank >= 2 && $vip_end_time < time()){
             $userRank = 1;
+            self::where('user_id', $userId)->update(['user_rank' => $userRank]);
+            $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
         }
 
         $watchTimes = 0;
