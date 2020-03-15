@@ -239,6 +239,15 @@ class Member extends BaseModel
             $user['is_affiliate'] = AffiliateLog::checkOpen();
             //
             $userRank = $user['rank']['id'];
+            $vip_end_time = $user['original_vip_end_time'];
+
+            // 如果VIP已到期，则将userRank设置为1
+            if($userRank >= 2 && $vip_end_time < time()){
+                $userRank = 1;
+                self::where('user_id', $uid)->update(['user_rank' => $userRank]);
+                $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
+            }
+
             $watchTimes = 0;
             $watchedTimes = 0;//已经观看次数
             if($userRank < 2){
@@ -998,7 +1007,7 @@ class Member extends BaseModel
     {
         $model = UserRank::findRankByUid($this->attributes['user_id']);
         if ($model) {
-            return $model->toArray();
+            $arr = $model->toArray();
         } else {
             //如果没有等级　默认返回注册用户
             $arr = array(
@@ -1008,8 +1017,8 @@ class Member extends BaseModel
                 'score_min'=> 0,
                 'score_max'=> 0,
             );
-            return $arr;
         }
+        return $arr;
     }
 
     public function getGenderAttribute()
@@ -1019,12 +1028,11 @@ class Member extends BaseModel
 
     public function getVipEndTimeAttribute()
     {
-        if($this->attributes['vip_end_time'] != null){
+        if($this->attributes['vip_end_time'] >= time()){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
-            return $this->attributes['vip_end_time'];
+            return '請開通會員';
         }
-
     }
 
     public function getOriginalVipEndTimeAttribute()
@@ -1123,7 +1131,7 @@ class Member extends BaseModel
                 'alias' => $username,
                 'mobile_phone' => '',
                 'rank_points' => 0,
-                'vip_end_time' => time()
+                'vip_end_time' => 0
             ];
 
             if ($model = self::create($data)) {
@@ -1164,6 +1172,15 @@ class Member extends BaseModel
         $info = $model->toArray();
         //
         $userRank = $info['rank']['id'];
+        $vip_end_time = $info['original_vip_end_time'];
+
+        // 如果VIP已到期，则将userRank设置为1
+        if($userRank >= 2 && $vip_end_time < time()){
+            $userRank = 1;
+            self::where('user_id', $userId)->update(['user_rank' => $userRank]);
+            $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
+        }
+
         $watchTimes = 0;
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2){
@@ -1183,7 +1200,6 @@ class Member extends BaseModel
         $info['watch_times'] = $watchTimes;
         $info['watched_times'] = $watchedTimes;
         //
-        UserRegStatus::toUpdate($model->user_id, 1);
         $token = Token::encode(['uid' => $model->user_id]);
         UserRegStatus::toUpdate($model->user_id, 1);
         return self::formatBody(['token' => $token, 'user' => $info]);
