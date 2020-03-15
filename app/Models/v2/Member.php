@@ -1027,10 +1027,10 @@ class Member extends BaseModel
 
     public function getVipEndTimeAttribute()
     {
-        if($this->attributes['vip_end_time'] != null){
+        if($this->attributes['vip_end_time'] > 0){
             return date("Y-m-d H:i:s", $this->attributes['vip_end_time']);
         }else{
-            return $this->attributes['vip_end_time'];
+            return '請開通會員';
         }
 
     }
@@ -1130,12 +1130,12 @@ class Member extends BaseModel
                 'sex' => 0,
                 'alias' => $username,
                 'mobile_phone' => '',
-                'rank_points' => 0,
-                'vip_end_time' => time()
+                'rank_points' => 0
             ];
 
             if ($model = self::create($data)) {
                 $userId = $model->user_id;
+                $model = Member::where('user_id', $userId)->first();
                 // 插入设备信息
                 if(! $userDeviceModel = UserDevice::createDevice($userId, $device_id, $os, $ip,'')){
                     return self::formatError(self::UNKNOWN_ERROR);
