@@ -10,7 +10,7 @@ use \DB;
 use App\Services\Shopex\Erp;
 use App\Services\Shopex\Sms;
 use App\Helper\Header;
-use Redis;
+use Illuminate\Support\Facades\Redis;
 use Log;
 use App\Services\Shopex\Logistics;
 
