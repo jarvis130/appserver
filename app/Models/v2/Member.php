@@ -245,7 +245,7 @@ class Member extends BaseModel
             if($userRank >= 2 && $vip_end_time < time()){
                 $userRank = 1;
                 self::where('user_id', $uid)->update(['user_rank' => $userRank]);
-                $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
+                $user['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
             }
 
             $watchedTimes = 0;//已经观看次数
