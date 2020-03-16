@@ -18,12 +18,107 @@
  */
 namespace App\Services\Payment\Juhepay;
 
-use App\Services\Payment\wxpay\TenpayHttpClient;
+use App\Models\v2\Pay;
 use Log;
 
-class Juhepay
+class Juhepay1
 {
     public $pay_url = 'http://47.90.50.227/smartpayment/pay/gateway';
+    public $pay_code = 'juhepay1';
+
+    /**
+     * 支付入口
+     * @param $code
+     * @param $order
+     * @return mixed
+     */
+    public function pay($code, $order)
+    {
+        $pay_code = $this->pay_code;
+        $payment = Pay::getPayment($pay_code);
+
+        if (!$payment) {
+            return array(
+                'code' => 10001,
+                'message' => '未找到支付'
+            );
+        }
+
+        $payment_config = $payment->pay_config;
+
+        $juhepay_partner = Pay::getConfigValueByName($payment_config, 'juhepay_partner');
+        $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
+
+        if(empty($juhepay_partner) || empty($juhepay_key)){
+            return array(
+                'code' => 10002,
+                'message' => '未找到支付相应配置'
+            );
+        }
+
+        switch ($code){
+            case $pay_code . '.alipay':
+                $service = 'pay.alipay.wappay';
+                break;
+            case $pay_code . '.wxpay':
+                $service = 'pay.wxpay.sm';
+                break;
+            case $pay_code . '.kjpay':
+                $service = 'pay.kj.web';
+                break;
+        }
+
+        $parameter = array(
+            'service'           => $service,
+            'version'           => '1.0',
+            'charset'           => 'UTF-8',
+            'sign_type'         => 'MD5',
+            'merchant_id'       => $juhepay_partner,
+            'nonce_str'         => str_random(32),
+            'notify_url'        => url('/v2/order.notify.' . $code),
+            'client_ip'         => self::get_client_ip(), // 终端ip
+            /* 业务参数 */
+            'goods_desc'        => '充值',
+            'out_trade_no'      => $order->order_sn,
+            'total_amount'      => $order->order_amount,
+        );
+
+        //生成签名
+        $sign = $this->createMd5Sign($parameter, $juhepay_key);
+        $parameter['sign'] = $sign;
+
+        //支付
+        $pay_result = $this->doPay($parameter);
+
+        if(is_string($pay_result)){
+            return array(
+                'code' => 10003,
+                'message' => $pay_result
+            );
+        }
+
+        if($pay_result['status'] != 0){
+            return array(
+                'code' => 10003,
+                'message' => $pay_result['message']
+            );
+        }
+
+        if($pay_result['result_code'] != 0){
+            return array(
+                'code' => 10003,
+                'message' => $pay_result['err_msg']
+            );
+        }
+
+        return array(
+            'code' => 0,
+            'message' => '支付成功',
+            'data' => [
+                'url' => $pay_result['pay_info']
+            ]
+        );
+    }
 
     /**
      *创建package签名
@@ -45,7 +140,7 @@ class Juhepay
         return $sign;
     }
 
-    public function pay($param, $result_decode = true)
+    public function doPay($param, $result_decode = true)
     {
         if (empty($param['out_trade_no'])) {
             return "订单号错误";

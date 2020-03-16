@@ -19,7 +19,7 @@ namespace App\Services\Payment\Juhepay;
 
 use Log;
 
-class JuhepayNotify
+class Juhepay2Notify
 {
     /**
      * 获取返回时的签名验证结果
@@ -33,7 +33,7 @@ class JuhepayNotify
         unset($para_temp['sign']);
 
         //除去待签名参数数组中的空值和签名参数
-        $juhepay = new Juhepay();
+        $juhepay = new Juhepay1();
         $mySign = $juhepay->createMd5Sign($para_temp, $key);
 
         if($mySign == strtoupper($sign)){

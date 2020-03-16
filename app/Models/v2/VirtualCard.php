@@ -2,7 +2,7 @@
 
 namespace App\Models\v2;
 
-use App\Libs\Crypt;
+use App\Libs\Ecshop\Crypt;
 use App\Models\BaseModel;
 
 use App\Helper\Token;
