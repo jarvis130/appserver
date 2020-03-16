@@ -20,7 +20,6 @@ namespace App\Services\Payment\Juhepay;
 
 use App\Libs\Crypt\RSAUtils;
 use App\Models\v2\Pay;
-use App\Services\Payment\wxpay\TenpayHttpClient;
 use Log;
 
 class Juhepay2
@@ -50,9 +49,9 @@ class Juhepay2
 
         $juhepay_partner = Pay::getConfigValueByName($payment_config, 'juhepay_partner');
         $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
-        $juhepay_crypt_key = Pay::getConfigValueByName($payment_config, 'juhepay_crypt_key');
+        $juhepay_pay_public_key = Pay::getConfigValueByName($payment_config, 'juhepay_pay_public_key');
 
-        if(empty($juhepay_partner) || empty($juhepay_sign_key) || empty($juhepay_crypt_key)){
+        if(empty($juhepay_partner) || empty($juhepay_sign_key) || empty($juhepay_pay_public_key)){
             return array(
                 'code' => 10002,
                 'message' => '未找到支付相应配置'
@@ -99,10 +98,12 @@ class Juhepay2
         $parameter['sign'] = $sign;
 
         //加密
-        $data = $this->encrypt($parameter, $juhepay_crypt_key);
+        $data = json_encode($parameter);
+        $data = $this->encrypt($data, $juhepay_pay_public_key);
+        $data = urlencode($data);
 
         //支付
-        $pay_result = $this->doPay($parameter);
+        $pay_result = $this->doPay($data);
 
         if(is_string($pay_result)){
             return array(
@@ -111,17 +112,10 @@ class Juhepay2
             );
         }
 
-        if($pay_result['status'] != 0){
+        if($pay_result['stateCode'] != '00'){
             return array(
                 'code' => 10003,
-                'message' => $pay_result['message']
-            );
-        }
-
-        if($pay_result['result_code'] != 0){
-            return array(
-                'code' => 10003,
-                'message' => $pay_result['err_msg']
+                'message' => $pay_result['msg']
             );
         }
 
@@ -129,7 +123,7 @@ class Juhepay2
             'code' => 0,
             'message' => '支付成功',
             'data' => [
-                'url' => $pay_result['pay_info']
+                'url' => $pay_result['qrcodeUrl']
             ]
         );
     }
@@ -155,6 +149,7 @@ class Juhepay2
     {
         $rsa = new RSAUtils();
         $data = $rsa->encrypt($params, $key);
+        $data = base64_encode($data);
         return $data;
     }
 

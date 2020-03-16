@@ -10,6 +10,7 @@ use App\Services\Payment\Alipay\AlipayNotify;
 use App\Services\Payment\Juhepay\Juhepay1;
 use App\Services\Payment\Juhepay\Juhepay1Notify;
 use App\Services\Payment\Juhepay\Juhepay2;
+use App\Services\Payment\Juhepay\Juhepay2Notify;
 use App\Services\Payment\wxpay\WxPay;
 use App\Services\Payment\wxpay\WxResponse;
 use App\Services\Payment\Unionpay\Union;
@@ -725,7 +726,7 @@ class Payment extends BaseModel
             } else {
                 $postStr = file_get_contents('php://input');
             }
-            Log::info('juhepay.notify:'. $postStr);
+            Log::info($juhepay1_code . '.notify:'. $postStr);
 
             $postArr = json_decode($postStr, true);
 
@@ -837,7 +838,7 @@ class Payment extends BaseModel
             } else {
                 $postStr = file_get_contents('php://input');
             }
-            Log::info('juhepay.notify:'. $postStr);
+            Log::info($juhepay2_code . '.notify:'. $postStr);
 
             $postArr = json_decode($postStr, true);
 
@@ -852,26 +853,32 @@ class Payment extends BaseModel
                 $pay_id = $payment->pay_id;
                 $payment_config = $payment->pay_config;
 
-                $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
+                $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
+                $juhepay_pay_public_key = Pay::getConfigValueByName($payment_config, 'juhepay_pay_public_key');
 
                 if(empty($juhepay_key)){
                     echo 'fail';
                     return false;
                 }
 
-                $juhepay_notify = new Juhepay1Notify();
+                $juhepay_notify = new Juhepay2Notify();
+
+                // 解密
+                $pay_result = urldecode($postArr);
+                $pay_result = $juhepay_notify->decrypt($pay_result, $juhepay_pay_public_key);
+                $pay_result = json_decode($pay_result, true);
 
                 // 验证签名
-                $sign_result = $juhepay_notify->getSignVeryfy($postArr, $juhepay_key);
+                $sign_result = $juhepay_notify->getSignVeryfy($pay_result, $juhepay_sign_key);
 
                 if (!$sign_result) {
                     echo 'fail';
                     return false;
                 }
 
-                if ($postArr['result_code'] == 0) {
+                if ($pay_result['payStateCode'] == '00') {
                     // 查询未付款订单
-                    $order = Order::findUnpayedBySN($postArr['out_trade_no']);
+                    $order = Order::findUnpayedBySN($pay_result['orderNo']);
 
                     if(!$order){
                         echo 'success';

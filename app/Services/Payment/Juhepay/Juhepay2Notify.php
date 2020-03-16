@@ -17,6 +17,7 @@
 
 namespace App\Services\Payment\Juhepay;
 
+use App\Libs\Crypt\RSAUtils;
 use Log;
 
 class Juhepay2Notify
@@ -33,7 +34,7 @@ class Juhepay2Notify
         unset($para_temp['sign']);
 
         //除去待签名参数数组中的空值和签名参数
-        $juhepay = new Juhepay1();
+        $juhepay = new Juhepay2();
         $mySign = $juhepay->createMd5Sign($para_temp, $key);
 
         if($mySign == strtoupper($sign)){
@@ -41,5 +42,16 @@ class Juhepay2Notify
         }else{
             return false;
         }
+    }
+
+    /**
+     *数据解密
+     */
+    public function decrypt($params, $key)
+    {
+        $params = base64_decode($params);
+        $rsa = new RSAUtils();
+        $data = $rsa->decrypt($params, $key);
+        return base64_encode($data);
     }
 }
