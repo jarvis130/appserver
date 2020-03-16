@@ -19,12 +19,26 @@
 namespace App\Services\Payment\Juhepay;
 
 use App\Models\v2\Pay;
+use App\Models\v2\Payment;
 use Log;
 
 class Juhepay1
 {
     public $pay_url = 'http://47.90.50.227/smartpayment/pay/gateway';
     public $pay_code = 'juhepay1';
+
+    /**
+     * 获取支付方式编码列表
+     */
+    public function getPayMethodCodeList(){
+        $pay_code = $this->pay_code;
+        $pay_methods = array(
+            $pay_code . '.alipay',
+            $pay_code . '.wxpay',
+            $pay_code . '.kjpay'
+        );
+        return $pay_methods;
+    }
 
     /**
      * 支付入口
@@ -76,7 +90,7 @@ class Juhepay1
             'merchant_id'       => $juhepay_partner,
             'nonce_str'         => str_random(32),
             'notify_url'        => url('/v2/order.notify.' . $code),
-            'client_ip'         => self::get_client_ip(), // 终端ip
+            'client_ip'         => Payment::get_client_ip(), // 终端ip
             /* 业务参数 */
             'goods_desc'        => '充值',
             'out_trade_no'      => $order->order_sn,

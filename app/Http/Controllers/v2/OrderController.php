@@ -161,9 +161,28 @@ class OrderController extends Controller
      */
     public function pay()
     {
+        $codes = array(
+            'alipay.app',
+            'wxpay.app',
+            'unionpay.app',
+            'cod.app',
+            'wxpay.web',
+            'teegon.wap',
+            'alipay.wap',
+            'wxpay.wxa',
+            'balance',
+            'wxpay.h5',
+            'cod'
+        );
+
+        $juhe_codes = Payment::getJuhePayMethodCodeList();
+
+        $codes = array_merge($codes, $juhe_codes);
+        $codes_str = implode(',', $codes);
+
         $rules = [
             'order' => 'required|integer|min:1',
-            'code' => 'required|string|in:alipay.app,wxpay.app,unionpay.app,cod.app,wxpay.web,teegon.wap,alipay.wap,wxpay.wxa,balance,wxpay.h5,cod,juhepay.alipay,juhepay.wxpay,juhepay.kjpay',
+            'code' => 'required|string|in:' . $codes_str,
             'openid' => 'required_if:code,wxpay.web|string',
             'channel' => 'string',
             'referer' => 'string',

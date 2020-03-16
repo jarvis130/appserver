@@ -18,14 +18,14 @@
  */
 namespace App\Services\Payment\Juhepay;
 
-use App\Libs\Crypt\RSAUtils;
 use App\Models\v2\Pay;
+use App\Models\v2\Payment;
 use Log;
 
-class Juhepay2
+class Juhepay3
 {
-    public $pay_url = '';
-    public $pay_code = 'juhepay2';
+    public $pay_url = 'http://gway.yt888f.com:7060/api/qrCodePay.action';
+    public $pay_code = 'juhepay3';
 
     /**
      * 获取支付方式编码列表
@@ -37,8 +37,7 @@ class Juhepay2
             $pay_code . '.wxpay',
             $pay_code . '.qqpay',
             $pay_code . '.jdpay',
-            $pay_code . '.kjpay',
-            $pay_code . '.alipay_hb'
+            $pay_code . '.kjpay'
         );
         return $pay_methods;
     }
@@ -65,9 +64,8 @@ class Juhepay2
 
         $juhepay_partner = Pay::getConfigValueByName($payment_config, 'juhepay_partner');
         $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
-        $juhepay_pay_public_key = Pay::getConfigValueByName($payment_config, 'juhepay_pay_public_key');
 
-        if(empty($juhepay_partner) || empty($juhepay_sign_key) || empty($juhepay_pay_public_key)){
+        if(empty($juhepay_partner) || empty($juhepay_sign_key)){
             return array(
                 'code' => 10002,
                 'message' => '未找到支付相应配置'
@@ -90,36 +88,27 @@ class Juhepay2
             case $pay_code . '.kjpay':
                 $service = 'UNION_WAP';
                 break;
-            case $pay_code . '.alipay_hb':
-                $service = 'ZFB_HB_H5';
-                break;
         }
 
         $parameter = array(
             'payType'           => $service,
-            'version'           => 'V3.3.0.0',
-            'charsetCode'       => 'UTF-8',
-            'merchNo'           => $juhepay_partner,
-            'randomNum'         => str_random(8),
+            'appId'             => $juhepay_partner,
+            'nonceStr'          => str_random(10),
             'notifyUrl'         => url('/v2/order.notify.' . $code),
-            'notifyViewUrl'     => '',
+            'returnUrl'         => '',
+            'requestIp'         => Payment::get_client_ip(), // 终端ip
             /* 业务参数 */
-            'goodsName'         => '充值',
-            'orderNo'           => $order->order_sn,
-            'amount'            => $order->order_amount * 100,
+            'goodsInfo'         => '充值',
+            'outTradeNo'        => $order->order_sn,
+            'totalAmount'       => $order->order_amount * 100,
         );
 
         //生成签名
         $sign = $this->createMd5Sign($parameter, $juhepay_sign_key);
         $parameter['sign'] = $sign;
 
-        //加密
-        $data = json_encode($parameter);
-        $data = $this->encrypt($data, $juhepay_pay_public_key);
-        $data = urlencode($data);
-
         //支付
-        $pay_result = $this->doPay($data);
+        $pay_result = $this->doPay($parameter);
 
         if(is_string($pay_result)){
             return array(
@@ -128,10 +117,10 @@ class Juhepay2
             );
         }
 
-        if($pay_result['stateCode'] != '00'){
+        if($pay_result['resultCode'] != '00'){
             return array(
                 'code' => 10003,
-                'message' => $pay_result['msg']
+                'message' => $pay_result['resultMsg']
             );
         }
 
@@ -139,7 +128,7 @@ class Juhepay2
             'code' => 0,
             'message' => '支付成功',
             'data' => [
-                'url' => $pay_result['qrcodeUrl']
+                'url' => $pay_result['qrCode']
             ]
         );
     }
@@ -158,20 +147,9 @@ class Juhepay2
         return $sign;
     }
 
-    /**
-     *数据加密
-     */
-    public function encrypt($params, $key)
-    {
-        $rsa = new RSAUtils();
-        $data = $rsa->encrypt($params, $key);
-        $data = base64_encode($data);
-        return $data;
-    }
-
     public function doPay($param, $result_decode = true)
     {
-        if (empty($param['orderNo'])) {
+        if (empty($param['outTradeNo'])) {
             return "订单号错误";
         }
 
@@ -179,7 +157,7 @@ class Juhepay2
         //     return "付款成功回调地址错误";
         // }
 
-        if (empty($param['amount'])) {
+        if (empty($param['totalAmount'])) {
             return "支付金额错误";
         }
 
