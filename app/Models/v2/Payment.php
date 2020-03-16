@@ -710,7 +710,8 @@ class Payment extends BaseModel
         Log::info('支付开始回调');
 
         //--------- 聚合支付1 notify ----------
-        $juhepay1_code = 'juhepay1';
+        $juhepay1 = new Juhepay1();
+        $juhepay1_code = $juhepay1->pay_code;
         $juhepay1_pay_methods = array(
             $juhepay1_code . '.alipay',
             $juhepay1_code . '.wxpay',
@@ -819,7 +820,8 @@ class Payment extends BaseModel
         }
 
         //--------- 聚合支付2 notify ----------
-        $juhepay2_code = 'juhepay2';
+        $juhepay2 = new Juhepay2();
+        $juhepay2_code = $juhepay2->pay_code;
         $juhepay2_pay_methods = array(
             $juhepay2_code . '.alipay',
             $juhepay2_code . '.alipay_hb',
@@ -840,96 +842,89 @@ class Payment extends BaseModel
             }
             Log::info($juhepay2_code . '.notify:'. $postStr);
 
+            $payment = Pay::where('pay_code', $juhepay2_code)->first();
+
+            if (!$payment) {
+                echo 'fail';
+                return false;
+            }
+
+            $pay_id = $payment->pay_id;
+            $payment_config = $payment->pay_config;
+
+            $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
+            $juhepay_private_key = Pay::getConfigValueByName($payment_config, 'juhepay_private_key');
+
+            if(empty($juhepay_key)){
+                echo 'fail';
+                return false;
+            }
+
+            $juhepay_notify = new Juhepay2Notify();
+
+            // 解密
+            $postStr = urldecode($postStr);
+            $postStr = $juhepay_notify->decrypt($postStr, $juhepay_private_key);
             $postArr = json_decode($postStr, true);
 
-            if ($postArr['status'] == 0) {
-                $payment = Pay::where('pay_code', 'juhepay')->first();
+            // 验证签名
+            $sign_result = $juhepay_notify->getSignVeryfy($postArr, $juhepay_sign_key);
 
-                if (!$payment) {
-                    echo 'fail';
-                    return false;
+            if (!$sign_result) {
+                echo 'fail';
+                return false;
+            }
+
+            if ($postArr['payStateCode'] == '00') {
+                // 查询未付款订单
+                $order = Order::findUnpayedBySN($postArr['orderNo']);
+
+                if(!$order){
+                    echo 'success';
+                    return true;
                 }
 
-                $pay_id = $payment->pay_id;
-                $payment_config = $payment->pay_config;
+                /* 修改订单状态 */
+                $order->pay_time = time();
+                $order->order_status = Order::OS_CONFIRMED;
+                $order->pay_status = Order::PS_PAYED;
+                $order->pay_id = $pay_id;
+                $order->pay_name = "聚合支付：" . $code;
+                $order->money_paid += $order->order_amount;
+                $order->order_amount = 0;
+                $order->save();
 
-                $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
-                $juhepay_pay_public_key = Pay::getConfigValueByName($payment_config, 'juhepay_pay_public_key');
-
-                if(empty($juhepay_key)){
-                    echo 'fail';
-                    return false;
-                }
-
-                $juhepay_notify = new Juhepay2Notify();
-
-                // 解密
-                $pay_result = urldecode($postArr);
-                $pay_result = $juhepay_notify->decrypt($pay_result, $juhepay_pay_public_key);
-                $pay_result = json_decode($pay_result, true);
-
-                // 验证签名
-                $sign_result = $juhepay_notify->getSignVeryfy($pay_result, $juhepay_sign_key);
-
-                if (!$sign_result) {
-                    echo 'fail';
-                    return false;
-                }
-
-                if ($pay_result['payStateCode'] == '00') {
-                    // 查询未付款订单
-                    $order = Order::findUnpayedBySN($pay_result['orderNo']);
-
-                    if(!$order){
-                        echo 'success';
-                        return true;
-                    }
-
-                    /* 修改订单状态 */
-                    $order->pay_time = time();
-                    $order->order_status = Order::OS_CONFIRMED;
+                /* 处理虚拟卡商品 */
+                $result = Order::deal_virtual_card_after_payed($order->order_id);
+                if($result){
+                    // 修改订单状态
+                    $order->order_status = Order::OS_SPLITED;
                     $order->pay_status = Order::PS_PAYED;
-                    $order->pay_id = $pay_id;
-                    $order->pay_name = "聚合支付：" . $code;
-                    $order->money_paid += $order->order_amount;
-                    $order->order_amount = 0;
+                    $order->shipping_status = Order::SS_RECEIVED;
                     $order->save();
-
-                    /* 处理虚拟卡商品 */
-                    $result = Order::deal_virtual_card_after_payed($order->order_id);
-                    if($result){
-                        // 修改订单状态
-                        $order->order_status = Order::OS_SPLITED;
-                        $order->pay_status = Order::PS_PAYED;
-                        $order->shipping_status = Order::SS_RECEIVED;
-                        $order->save();
-                    }
-
-                    OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
-                    AffiliateLog::affiliate($order->order_id);
-                    // 修改pay_log状态
-                    PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
-                    Erp::order($order->order_sn);
-                    //发送短信
-                    $params = [
-                        'order_sn' => $order->order_sn,
-                        'consignee' => $order->consignee['name'],//收货人姓名
-                        'tel' => $order->tel,//收货人手机号
-                    ];
-                    Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
-                    $params = [
-                        'order_sn' => $order->order_sn,
-                        'money_paid' => $order->money_paid,//支付金额
-                    ];
-                    Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
-                    Log::info('notify_is_success::order:'. json_encode($order));
-
-                    echo 'success';
-                    return true;
-                } else {
-                    echo 'success';
-                    return true;
                 }
+
+                OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
+                AffiliateLog::affiliate($order->order_id);
+                // 修改pay_log状态
+                PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
+                Erp::order($order->order_sn);
+                //发送短信
+                $params = [
+                    'order_sn' => $order->order_sn,
+                    'consignee' => $order->consignee['name'],//收货人姓名
+                    'tel' => $order->tel,//收货人手机号
+                ];
+                Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
+                $params = [
+                    'order_sn' => $order->order_sn,
+                    'money_paid' => $order->money_paid,//支付金额
+                ];
+                Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
+                Log::info('notify_is_success::order:'. json_encode($order));
+
+                echo 'success';
+                return true;
             } else {
                 echo 'success';
                 return true;
