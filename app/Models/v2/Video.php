@@ -1369,21 +1369,19 @@ class Video extends BaseModel
             $model->add_time            = time();
             $model->breadcrumb = $v1.' / '.$v2;
 
-            if ($model->save()) {
-                return self::formatBody(['watched_times' => 1]);
-            } else {
+            if (!$model->save()) {
                 return self::formatError(self::UNKNOWN_ERROR);
             }
         } elseif ($num >0) {
             VideoWatchLog::where(['user_id' => $uid, 'video_id' => $video_id])->update([
                 'add_time' => time()
             ]);
-
-            // 获取当天观看次数
-            $watchedTimes = self::getTodayWatchedTimes($uid);
-
-            return self::formatBody(['watched_times' => $watchedTimes]);
         }
+
+        // 获取当天观看次数
+        $watchedTimes = self::getTodayWatchedTimes($uid);
+
+        return self::formatBody(['watched_times' => $watchedTimes]);
     }
 
 
