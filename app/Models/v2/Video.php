@@ -1369,18 +1369,31 @@ class Video extends BaseModel
             $model->add_time            = time();
             $model->breadcrumb = $v1.' / '.$v2;
 
-            if ($model->save()) {
-                return self::formatBody(['is_watched' =>true ]);
-            } else {
+            if (!$model->save()) {
                 return self::formatError(self::UNKNOWN_ERROR);
             }
         } elseif ($num >0) {
             VideoWatchLog::where(['user_id' => $uid, 'video_id' => $video_id])->update([
                 'add_time' => time()
             ]);
-            return self::formatBody(['is_watched' =>true ]);
         }
+
+        // 获取当天观看次数
+        $watchedTimes = self::getTodayWatchedTimes($uid);
+
+        return self::formatBody(['watched_times' => $watchedTimes]);
     }
+
+
+    // 获取当天观看次数
+    public static function getTodayWatchedTimes($userId){
+        //当天观看次数
+        $prefix = DB::connection('shop')->getTablePrefix();
+        $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where user_id = ".$userId." and date_format(from_unixtime(add_time),'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
+        $num = $result[0]->num;
+        return $num;
+    }
+
 
     // 获取商品VIP时长（根据商品ID）
     public static function getGoodsVipTime($goods_id){

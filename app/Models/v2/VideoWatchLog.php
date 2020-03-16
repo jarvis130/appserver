@@ -52,7 +52,6 @@ class VideoWatchLog extends BaseModel
     public static function checkWatchTimes(array $attributes){
         extract($attributes);
 
-        $prefix = DB::connection('shop')->getTablePrefix();
         $uid = Token::authorization();
         $user = Member::where('user_id', $uid)->first();
         $userRank = $user['user_rank'];
@@ -78,9 +77,7 @@ class VideoWatchLog extends BaseModel
 
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2) {
-            $result = DB::select("select count(1) as num from " . $prefix . "video_watch_log where user_id = " . $uid . " and date_format(from_unixtime(add_time),'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
-            $num = $result[0]->num;
-            $watchedTimes = $num;
+            $watchedTimes = Video::getTodayWatchedTimes($uid);
         }
 
         if($times >= $watchedTimes){
