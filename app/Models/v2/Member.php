@@ -1109,6 +1109,7 @@ class Member extends BaseModel
     public static function signinByDevice(array $attributes, $os, $ip){
         extract($attributes);
         $info = null;
+        $model = null;
         $userDevice = UserDevice::where('device_id', $device_id)->first();
         if($userDevice){
             $userId = $userDevice['user_id'];
@@ -1126,6 +1127,7 @@ class Member extends BaseModel
                 'email' => $email,
                 'password' => self::setPassword($password),
                 'reg_time' => $regtime,
+                'last_login' => $regtime,
                 'user_rank' => 0,
                 'sex' => 0,
                 'alias' => $username,
@@ -1165,6 +1167,7 @@ class Member extends BaseModel
                         Download::where(['ip'=>$ip, 'status' => '0', 'user_id' => $userId])->delete();
                     }
                 }
+                $model = Member::where('user_id', $userId)->first();
             }else {
                 return self::formatError(self::UNKNOWN_ERROR);
             }
