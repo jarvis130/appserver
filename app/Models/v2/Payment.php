@@ -1467,29 +1467,29 @@ class Payment extends BaseModel
                             $arr['name'] = $name . '-支付宝';
                             break;
                         case '2':
-                            $quota_key = 'juhepay_alipay_hb_quota';
-                            $arr['code'] = $pay_code . '.alipay_hb';
-                            $arr['name'] = $name . '-支付宝红包';
-                            break;
-                        case '3':
                             $quota_key = 'juhepay_wxpay_quota';
                             $arr['code'] = $pay_code . '.wxpay';
                             $arr['name'] = $name . '-微信支付';
                             break;
-                        case '4':
+                        case '3':
                             $quota_key = 'juhepay_qqpay_quota';
                             $arr['code'] = $pay_code . '.qqpay';
                             $arr['name'] = $name . '-QQ支付';
                             break;
-                        case '5':
+                        case '4':
                             $quota_key = 'juhepay_jdpay_quota';
                             $arr['code'] = $pay_code . '.jdpay';
                             $arr['name'] = $name . '-京东支付';
                             break;
-                        case '6':
+                        case '5':
                             $quota_key = 'juhepay_kjpay_quota';
                             $arr['code'] = $pay_code . '.kjpay';
                             $arr['name'] = $name . '-快捷支付';
+                            break;
+                        case '6':
+                            $quota_key = 'juhepay_alipay_hb_quota';
+                            $arr['code'] = $pay_code . '.alipay_hb';
+                            $arr['name'] = $name . '-支付宝红包';
                             break;
                     }
 
