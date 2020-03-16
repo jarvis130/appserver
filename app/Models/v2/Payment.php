@@ -742,9 +742,9 @@ class Payment extends BaseModel
                 $pay_id = $payment->pay_id;
                 $payment_config = $payment->pay_config;
 
-                $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
+                $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
 
-                if(empty($juhepay_key)){
+                if(empty($juhepay_sign_key)){
                     echo 'fail';
                     return false;
                 }
@@ -752,7 +752,7 @@ class Payment extends BaseModel
                 $juhepay_notify = new Juhepay1Notify();
 
                 // 验证签名
-                $sign_result = $juhepay_notify->getSignVeryfy($postArr, $juhepay_key);
+                $sign_result = $juhepay_notify->getSignVeryfy($postArr, $juhepay_sign_key);
 
                 if (!$sign_result) {
                     echo 'fail';
@@ -855,7 +855,7 @@ class Payment extends BaseModel
             $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
             $juhepay_private_key = Pay::getConfigValueByName($payment_config, 'juhepay_private_key');
 
-            if(empty($juhepay_key)){
+            if(empty($juhepay_sign_key)){
                 echo 'fail';
                 return false;
             }

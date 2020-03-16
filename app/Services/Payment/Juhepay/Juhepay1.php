@@ -47,9 +47,9 @@ class Juhepay1
         $payment_config = $payment->pay_config;
 
         $juhepay_partner = Pay::getConfigValueByName($payment_config, 'juhepay_partner');
-        $juhepay_key = Pay::getConfigValueByName($payment_config, 'juhepay_key');
+        $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
 
-        if(empty($juhepay_partner) || empty($juhepay_key)){
+        if(empty($juhepay_partner) || empty($juhepay_sign_key)){
             return array(
                 'code' => 10002,
                 'message' => '未找到支付相应配置'
@@ -84,7 +84,7 @@ class Juhepay1
         );
 
         //生成签名
-        $sign = $this->createMd5Sign($parameter, $juhepay_key);
+        $sign = $this->createMd5Sign($parameter, $juhepay_sign_key);
         $parameter['sign'] = $sign;
 
         //支付
