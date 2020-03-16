@@ -155,6 +155,84 @@ class Payment extends BaseModel
                         }
                     }
                 }
+
+                // 聚合支付2
+                if ($arr = Pay::where(['enabled' => 1, 'pay_code' => 'juhepay2'])->select('pay_code as code','pay_name as name','pay_desc as desc', 'pay_config as config')->first()) {
+                    $arr = $arr->toArray();
+                    $payment_config = $arr['config'];
+                    unset($arr['config']);
+
+                    // 获取订单金额
+                    $orderinfo = Order::where(['order_id'=>$order])->first();
+                    $amount = $orderinfo->order_amount;
+
+                    $juhepay_pay_method = Pay::getConfigValueByName($payment_config, 'juhepay_pay_method');
+                    $juhepay_pay_method = trim($juhepay_pay_method);
+                    if ($juhepay_pay_method) {
+                        $name = $arr['name'];
+                        // 获取支持的支付方式
+                        $pay_methods = explode(',', $juhepay_pay_method);
+                        foreach ($pay_methods as $pay_method){
+                            switch ($pay_method){
+                                case '1':
+                                    $quota_key = 'juhepay_alipay_quota';
+                                    $arr['code'] = 'juhepay2.alipay';
+                                    $arr['name'] = $name . '-支付宝';
+                                    break;
+                                case '2':
+                                    $quota_key = 'juhepay_alipay_hb_quota';
+                                    $arr['code'] = 'juhepay2.alipay_hb';
+                                    $arr['name'] = $name . '-支付宝红包';
+                                    break;
+                                case '3':
+                                    $quota_key = 'juhepay_wxpay_quota';
+                                    $arr['code'] = 'juhepay2.wxpay';
+                                    $arr['name'] = $name . '-微信支付';
+                                    break;
+                                case '4':
+                                    $quota_key = 'juhepay_qqpay_quota';
+                                    $arr['code'] = 'juhepay2.qqpay';
+                                    $arr['name'] = $name . '-QQ支付';
+                                    break;
+                                case '5':
+                                    $quota_key = 'juhepay_jdpay_quota';
+                                    $arr['code'] = 'juhepay2.jdpay';
+                                    $arr['name'] = $name . '-京东支付';
+                                    break;
+                                case '6':
+                                    $quota_key = 'juhepay_kjpay_quota';
+                                    $arr['code'] = 'juhepay2.kjpay';
+                                    $arr['name'] = $name . '-快捷支付';
+                                    break;
+                            }
+
+                            $usable = true; // 当前支付方式是否可用
+
+                            // 校验金额
+                            $quota = Pay::getConfigValueByName($payment_config, $quota_key);
+                            $quota = trim($quota);
+                            if($quota){
+                                if(strpos($quota,'-')){  // 范围限定
+                                    $quota_arr = explode('-', $quota);
+                                    $quota_min = min($quota_arr);
+                                    $quota_max = max($quota_arr);
+                                    if($amount < $quota_min || $amount > $quota_max){
+                                        $usable = false;
+                                    }
+                                }else{  // 值限定
+                                    $quota_arr = explode(',', $quota);
+                                    if(!in_array($amount, $quota_arr)){
+                                        $usable = false;
+                                    }
+                                }
+                            }
+
+                            if($usable){
+                                array_push($model, $arr);
+                            }
+                        }
+                    }
+                }
             }
 //        }
 
