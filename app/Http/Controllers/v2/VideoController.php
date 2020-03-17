@@ -56,6 +56,7 @@ class VideoController extends Controller
             'attr_value1'        => 'string|min:1',
             'attr_value2'        => 'string|min:1',
             'pub_id'        => 'integer|min:0',
+            'is_real'        => 'string|min:1',
         ];
 
         if ($error = $this->validateInput($rules)) {
