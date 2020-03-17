@@ -1582,11 +1582,11 @@ class Payment extends BaseModel
                     if($usable){
                         array_push($result, $arr);
                     }
-
-                    return $result;
                 }
             }
         }
+
+        return $result;
     }
 
     // 校验聚合支付金额限额
