@@ -354,7 +354,10 @@ class Video extends BaseModel
         extract($attributes);
         $prefix = DB::connection('shop')->getTablePrefix();
 
-        $where  = ['is_delete' => 0, 'is_on_sale' => 1, 'is_real' => '2'];
+        if (isset($is_real) && $is_real && empty($is_real)) {
+            $is_real = '2';
+        }
+        $where  = ['is_delete' => 0, 'is_on_sale' => 1, 'is_real' => $is_real];
 
         //全站商品
 //        $model = self::where($where);
