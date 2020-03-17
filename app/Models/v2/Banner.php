@@ -21,7 +21,7 @@ class Banner extends BaseModel
     public static function getList($scene = null)
     {
         if($scene){
-            $data = self::where('scene', $scene)->toArray();
+            $data = self::where('scene', $scene)->get()->toArray();
         }else{
             $data = self::all()->toArray();
         }
