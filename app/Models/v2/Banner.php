@@ -20,7 +20,7 @@ class Banner extends BaseModel
      */
     public static function getList($scene)
     {
-        $data = self::where('scene', $scene)->get()->toArray();
+        $data = self::where('scene', $scene)->orderBy('sort')->get()->toArray();
 
         if($scene == 2){
             return self::formatBody(['ads' => $data]);
