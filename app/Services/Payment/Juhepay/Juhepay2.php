@@ -24,7 +24,7 @@ use Log;
 
 class Juhepay2
 {
-    public $pay_url = '';
+    public $pay_url = 'http://netway.xfzfpay.com:90/api/pay';
     public $pay_code = 'juhepay2';
 
     /**
