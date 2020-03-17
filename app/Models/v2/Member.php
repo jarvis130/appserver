@@ -245,17 +245,13 @@ class Member extends BaseModel
             if($userRank >= 2 && $vip_end_time < time()){
                 $userRank = 1;
                 self::where('user_id', $uid)->update(['user_rank' => $userRank]);
-                $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
+                $user['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
             }
 
-            $watchTimes = 0;
             $watchedTimes = 0;//已经观看次数
             if($userRank < 2){
                 //当天观看次数
-                $prefix = DB::connection('shop')->getTablePrefix();
-                $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where user_id = ".$uid." and date_format(from_unixtime(add_time),'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
-                $num = $result[0]->num;
-                $watchedTimes = $num;
+                $watchedTimes = Video::getTodayWatchedTimes($uid);
             }
             if($userRank == 0){
                 $watchTimes = 5;
@@ -1184,14 +1180,10 @@ class Member extends BaseModel
             $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
         }
 
-        $watchTimes = 0;
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2){
             //当天观看次数
-            $prefix = DB::connection('shop')->getTablePrefix();
-            $result = DB::select("select count(1) as num from ".$prefix."video_watch_log where user_id = ".$userId." and date_format(from_unixtime(add_time),'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')");
-            $num = $result[0]->num;
-            $watchedTimes = $num;
+            $watchedTimes = Video::getTodayWatchedTimes($userId);
         }
         if($userRank == 0){
             $watchTimes = 5;

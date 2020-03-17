@@ -14,7 +14,7 @@ class BannerController extends Controller
     */
     public function index(Request $request)
     {
-        $model = Banner::getList();
+        $model = Banner::getList(1);
 
         return $this->json($model);
     }
