@@ -10,8 +10,6 @@ class Banner extends BaseModel
     protected $table      = 'banners';
     public $timestamps = false;
     protected $guarded    = [];
-    protected $appends    = ['id', 'src', 'url', 'text', 'type'];
-    protected $visible    = ['id', 'src', 'url', 'text', 'type'];
 
     /**
      * 获取列表
