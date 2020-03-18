@@ -152,6 +152,8 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->post('ecapi.share.download.insert', 'DownloadController@insertData');
     //
     $router->get('ecapi.version.app.check', 'VersionController@checkApp');
+    // 刷新缓存
+    $router->post('ecapi.cache.refresh', 'CacheController@refresh');
 });
 
 //Authorization
