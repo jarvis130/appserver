@@ -819,7 +819,7 @@ class Payment extends BaseModel
             }
 
             if ($postArr['payStateCode'] == '00') {
-                $do_result = self::afterPaySuccess($postArr['out_trade_no'], $pay_id, '聚合支付：' . $code);
+                $do_result = self::afterPaySuccess($postArr['orderNo'], $pay_id, '聚合支付：' . $code);
                 if(!$do_result){
                     echo 'FAIL';
                     return false;
@@ -872,7 +872,7 @@ class Payment extends BaseModel
                 }
 
                 if ($postArr['resultCode'] == '00') {
-                    $do_result = self::afterPaySuccess($postArr['out_trade_no'], $pay_id, '聚合支付：' . $code);
+                    $do_result = self::afterPaySuccess($postArr['outTradeNo'], $pay_id, '聚合支付：' . $code);
                     if(!$do_result){
                         echo 'fail';
                         return false;
