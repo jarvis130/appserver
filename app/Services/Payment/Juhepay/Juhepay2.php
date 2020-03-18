@@ -116,7 +116,6 @@ class Juhepay2
         //加密
         $data = json_encode($parameter);
         $data = $this->encrypt($data, $juhepay_pay_public_key);
-        $data = urlencode($data);
 
         //发送数据
         $param = array(

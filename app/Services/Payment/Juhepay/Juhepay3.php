@@ -158,18 +158,6 @@ class Juhepay3
 
     public function doPay($param, $result_decode = true)
     {
-        if (empty($param['outTradeNo'])) {
-            return "订单号错误";
-        }
-
-        // if(empty($param['notifyUrl'])){
-        //     return "付款成功回调地址错误";
-        // }
-
-        if (empty($param['totalAmount'])) {
-            return "支付金额错误";
-        }
-
         $rst = $this->post($this->pay_url, $param);
         if ($result_decode == true) {
             return json_decode($rst, true);
