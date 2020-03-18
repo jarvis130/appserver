@@ -118,8 +118,12 @@ class Juhepay2
         $data = $this->encrypt($data, $juhepay_pay_public_key);
         $data = urlencode($data);
 
+        $param = array(
+            'data' => $data
+        );
+
         //支付
-        $pay_result = $this->doPay($data);
+        $pay_result = $this->doPay($param);
 
         if(is_string($pay_result)){
             return array(
