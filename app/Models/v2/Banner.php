@@ -24,6 +24,7 @@ class Banner extends BaseModel
 
         if($scene == 2){
             $data = $model->get()->groupBy('group')->toArray();
+            ksort($data);
             return self::formatBody(['ads' => $data]);
         }else{
             $data = $model->get()->toArray();
