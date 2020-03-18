@@ -155,7 +155,7 @@ class Juhepay2
     public function createMd5Sign($signParams, $key)
     {
         ksort($signParams);
-        $signPars = json_encode($signParams);
+        $signPars = json_encode($signParams, 320);
         $signPars .= $key;
 
         $sign = strtoupper(md5($signPars));
