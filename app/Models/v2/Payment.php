@@ -921,7 +921,7 @@ class Payment extends BaseModel
         $juhepay3_code = $juhepay3->pay_code;
         $juhepay3_pay_methods = $juhepay3->getPayMethodCodeList();
         if (in_array($code, $juhepay3_pay_methods)) {
-            $postStr = $_POST['data'];
+            $postStr = $_POST['reqData'];
             Log::info($juhepay3_code . '.notify:'. $postStr);
 
             $postStr = urldecode($postStr);
