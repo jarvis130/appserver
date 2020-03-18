@@ -118,12 +118,10 @@ class Juhepay2
         $data = $this->encrypt($data, $juhepay_pay_public_key);
         $data = urlencode($data);
 
-        // 拼接商户号
-        $data .= '&merchNo=' . $juhepay_partner;
-
         //发送数据
         $param = array(
-            'data' => $data
+            'data' => $data,
+            'merchNo' => $juhepay_partner
         );
 
         //支付
