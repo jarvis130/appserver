@@ -100,7 +100,7 @@ class Juhepay3
             /* 业务参数 */
             'goodsInfo'         => '充值',
             'outTradeNo'        => $order->order_sn,
-            'totalAmount'       => $order->order_amount * 100,
+            'totalAmount'       => strval($order->order_amount * 100),
         );
 
         //生成签名

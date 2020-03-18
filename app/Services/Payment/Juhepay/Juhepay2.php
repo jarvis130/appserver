@@ -106,7 +106,7 @@ class Juhepay2
             /* 业务参数 */
             'goodsName'         => '充值',
             'orderNo'           => $order->order_sn,
-            'amount'            => $order->order_amount * 100,
+            'amount'            => strval($order->order_amount * 100),
         );
 
         //生成签名
