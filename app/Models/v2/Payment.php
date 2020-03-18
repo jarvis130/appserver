@@ -151,7 +151,7 @@ class Payment extends BaseModel
             if($result['code'] == 0){
                 return self::formatBody([
                     'order' => $order,
-                    'juhepay' => ['url' => $result['url']],
+                    'juhepay' => ['url' => $result['data']['url']],
                 ]);
             }else{
                 return self::formatError(self::BAD_REQUEST, $result['message']);
@@ -166,7 +166,7 @@ class Payment extends BaseModel
             if($result['code'] == 0){
                 return self::formatBody([
                     'order' => $order,
-                    'juhepay' => ['url' => $result['url']],
+                    'juhepay' => ['url' => $result['data']['url']],
                 ]);
             }else{
                 return self::formatError(self::BAD_REQUEST, $result['message']);
