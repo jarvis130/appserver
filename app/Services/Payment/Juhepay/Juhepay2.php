@@ -171,18 +171,6 @@ class Juhepay2
 
     public function doPay($param, $result_decode = true)
     {
-        if (empty($param['orderNo'])) {
-            return "订单号错误";
-        }
-
-        // if(empty($param['notifyUrl'])){
-        //     return "付款成功回调地址错误";
-        // }
-
-        if (empty($param['amount'])) {
-            return "支付金额错误";
-        }
-
         $rst = $this->post($this->pay_url, $param);
         if ($result_decode == true) {
             return json_decode($rst, true);
