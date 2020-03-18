@@ -760,52 +760,11 @@ class Payment extends BaseModel
                 }
 
                 if ($postArr['result_code'] == 0) {
-                    // 查询未付款订单
-                    $order = Order::findUnpayedBySN($postArr['out_trade_no']);
-
-                    if(!$order){
-                        echo 'success';
-                        return true;
+                    $do_result = self::afterPaySuccess($postArr['out_trade_no'], $pay_id, '聚合支付：' . $code);
+                    if(!$do_result){
+                        echo 'fail';
+                        return false;
                     }
-
-                    /* 修改订单状态 */
-                    $order->pay_time = time();
-                    $order->order_status = Order::OS_CONFIRMED;
-                    $order->pay_status = Order::PS_PAYED;
-                    $order->pay_id = $pay_id;
-                    $order->pay_name = "聚合支付：" . $code;
-                    $order->money_paid += $order->order_amount;
-                    $order->order_amount = 0;
-                    $order->save();
-
-                    /* 处理虚拟卡商品 */
-                    $result = Order::deal_virtual_card_after_payed($order->order_id);
-                    if($result){
-                        // 修改订单状态
-                        $order->order_status = Order::OS_SPLITED;
-                        $order->pay_status = Order::PS_PAYED;
-                        $order->shipping_status = Order::SS_RECEIVED;
-                        $order->save();
-                    }
-
-                    OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
-                    AffiliateLog::affiliate($order->order_id);
-                    // 修改pay_log状态
-                    PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
-                    Erp::order($order->order_sn);
-                    //发送短信
-                    $params = [
-                        'order_sn' => $order->order_sn,
-                        'consignee' => $order->consignee['name'],//收货人姓名
-                        'tel' => $order->tel,//收货人手机号
-                    ];
-                    Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
-                    $params = [
-                        'order_sn' => $order->order_sn,
-                        'money_paid' => $order->money_paid,//支付金额
-                    ];
-                    Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
-                    Log::info('notify_is_success::order:'. json_encode($order));
 
                     echo 'success';
                     return true;
@@ -861,52 +820,11 @@ class Payment extends BaseModel
             }
 
             if ($postArr['payStateCode'] == '00') {
-                // 查询未付款订单
-                $order = Order::findUnpayedBySN($postArr['orderNo']);
-
-                if(!$order){
-                    echo 'SUCCESS';
-                    return true;
+                $do_result = self::afterPaySuccess($postArr['out_trade_no'], $pay_id, '聚合支付：' . $code);
+                if(!$do_result){
+                    echo 'FAIL';
+                    return false;
                 }
-
-                /* 修改订单状态 */
-                $order->pay_time = time();
-                $order->order_status = Order::OS_CONFIRMED;
-                $order->pay_status = Order::PS_PAYED;
-                $order->pay_id = $pay_id;
-                $order->pay_name = "聚合支付：" . $code;
-                $order->money_paid += $order->order_amount;
-                $order->order_amount = 0;
-                $order->save();
-
-                /* 处理虚拟卡商品 */
-                $result = Order::deal_virtual_card_after_payed($order->order_id);
-                if($result){
-                    // 修改订单状态
-                    $order->order_status = Order::OS_SPLITED;
-                    $order->pay_status = Order::PS_PAYED;
-                    $order->shipping_status = Order::SS_RECEIVED;
-                    $order->save();
-                }
-
-                OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
-                AffiliateLog::affiliate($order->order_id);
-                // 修改pay_log状态
-                PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
-                Erp::order($order->order_sn);
-                //发送短信
-                $params = [
-                    'order_sn' => $order->order_sn,
-                    'consignee' => $order->consignee['name'],//收货人姓名
-                    'tel' => $order->tel,//收货人手机号
-                ];
-                Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
-                $params = [
-                    'order_sn' => $order->order_sn,
-                    'money_paid' => $order->money_paid,//支付金额
-                ];
-                Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
-                Log::info('notify_is_success::order:'. json_encode($order));
 
                 echo 'SUCCESS';
                 return true;
@@ -956,52 +874,11 @@ class Payment extends BaseModel
                 }
 
                 if ($postArr['resultCode'] == '00') {
-                    // 查询未付款订单
-                    $order = Order::findUnpayedBySN($postArr['outTradeNo']);
-
-                    if(!$order){
-                        echo 'success';
-                        return true;
+                    $do_result = self::afterPaySuccess($postArr['out_trade_no'], $pay_id, '聚合支付：' . $code);
+                    if(!$do_result){
+                        echo 'fail';
+                        return false;
                     }
-
-                    /* 修改订单状态 */
-                    $order->pay_time = time();
-                    $order->order_status = Order::OS_CONFIRMED;
-                    $order->pay_status = Order::PS_PAYED;
-                    $order->pay_id = $pay_id;
-                    $order->pay_name = "聚合支付：" . $code;
-                    $order->money_paid += $order->order_amount;
-                    $order->order_amount = 0;
-                    $order->save();
-
-                    /* 处理虚拟卡商品 */
-                    $result = Order::deal_virtual_card_after_payed($order->order_id);
-                    if($result){
-                        // 修改订单状态
-                        $order->order_status = Order::OS_SPLITED;
-                        $order->pay_status = Order::PS_PAYED;
-                        $order->shipping_status = Order::SS_RECEIVED;
-                        $order->save();
-                    }
-
-                    OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, '天工收银支付宝手机支付');
-                    AffiliateLog::affiliate($order->order_id);
-                    // 修改pay_log状态
-                    PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
-                    Erp::order($order->order_sn);
-                    //发送短信
-                    $params = [
-                        'order_sn' => $order->order_sn,
-                        'consignee' => $order->consignee['name'],//收货人姓名
-                        'tel' => $order->tel,//收货人手机号
-                    ];
-                    Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
-                    $params = [
-                        'order_sn' => $order->order_sn,
-                        'money_paid' => $order->money_paid,//支付金额
-                    ];
-                    Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
-                    Log::info('notify_is_success::order:'. json_encode($order));
 
                     echo 'success';
                     return true;
@@ -1631,6 +1508,57 @@ class Payment extends BaseModel
         $pay_methods = array_merge($pay_methods, $juhepay3_pay_methods);
 
         return $pay_methods;
+    }
+
+    // 支付成功处理
+    public static function afterPaySuccess($order_sn, $pay_id, $pay_name){
+        // 查询未付款订单
+        $order = Order::findUnpayedBySN($order_sn);
+
+        if(!$order){
+            return true;
+        }
+
+        /* 修改订单状态 */
+        $order->pay_time = time();
+        $order->order_status = Order::OS_CONFIRMED;
+        $order->pay_status = Order::PS_PAYED;
+        $order->pay_id = $pay_id;
+        $order->pay_name = $pay_name;
+        $order->money_paid += $order->order_amount;
+        $order->order_amount = 0;
+        $order->save();
+
+        /* 处理虚拟卡商品 */
+        $result = Order::deal_virtual_card_after_payed($order->order_id);
+        if($result){
+            // 修改订单状态
+            $order->order_status = Order::OS_SPLITED;
+            $order->pay_status = Order::PS_PAYED;
+            $order->shipping_status = Order::SS_RECEIVED;
+            $order->save();
+        }
+
+        OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, $pay_name);
+        AffiliateLog::affiliate($order->order_id);
+        // 修改pay_log状态
+        PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
+        Erp::order($order->order_sn);
+        //发送短信
+        $params = [
+            'order_sn' => $order->order_sn,
+            'consignee' => $order->consignee['name'],//收货人姓名
+            'tel' => $order->tel,//收货人手机号
+        ];
+        Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
+        $params = [
+            'order_sn' => $order->order_sn,
+            'money_paid' => $order->money_paid,//支付金额
+        ];
+        Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
+        Log::info('notify_is_success::order:'. json_encode($order));
+
+        return true;
     }
 
     public function getDescAttribute()
