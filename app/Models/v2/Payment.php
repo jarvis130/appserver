@@ -807,7 +807,6 @@ class Payment extends BaseModel
             $juhepay_notify2 = new Juhepay2Notify();
 
             // 解密
-            $postStr = urldecode($postStr);
             $postStr = $juhepay_notify2->decrypt($postStr, $juhepay_private_key);
             $postArr = json_decode($postStr, true);
 
@@ -842,7 +841,6 @@ class Payment extends BaseModel
             $postStr = $_POST['reqData'];
             Log::info($juhepay3_code . '.notify:'. $postStr);
 
-            $postStr = urldecode($postStr);
             $postArr = json_decode($postStr, true);
 
             if ($postArr['status'] == 0) {

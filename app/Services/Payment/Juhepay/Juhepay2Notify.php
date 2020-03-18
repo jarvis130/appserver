@@ -52,6 +52,6 @@ class Juhepay2Notify
         $params = base64_decode($params);
         $rsa = new RSAUtils();
         $data = $rsa->decrypt($params, $key);
-        return base64_encode($data);
+        return $data;
     }
 }
