@@ -107,9 +107,8 @@ class Juhepay3
         $sign = $this->createMd5Sign($parameter, $juhepay_sign_key);
         $parameter['sign'] = $sign;
 
-        //转码
+        //转json
         $data = json_encode($parameter);
-        $data = urlencode($data);
 
         //发送数据
         $param = array(
