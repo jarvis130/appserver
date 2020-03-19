@@ -44,7 +44,7 @@ class VideoController extends Controller
             'page'            => 'integer|min:1',
             'per_page'        => 'required_with:page|integer|min:1',
             'brand'           => 'integer|min:1',
-            'category'        => 'integer|min:1',
+            'category'        => 'integer|min:0',
             'shop'            => 'integer|min:1',
             'is_exchange'     => 'boolean',
             'is_hot'          => 'boolean',
