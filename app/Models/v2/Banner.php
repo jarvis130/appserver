@@ -23,9 +23,15 @@ class Banner extends BaseModel
         $model = self::where('scene', $scene)->orderBy('sort');
 
         if($scene == 2){
-            $data = $model->get()->groupBy('group')->toArray();
-            ksort($data);
-            return self::formatBody(['ads' => $data]);
+            $data = array();
+            $banners = $model->get()->groupBy('group')->toArray();
+            ksort($banners);
+            $i = 0;
+            foreach ($banners as $banner){
+                $i += 1;
+                $data['ad' . $i] = $banner;
+            }
+            return self::formatBody($data);
         }else{
             $data = $model->get()->toArray();
             return self::formatBody(['banners' => $data]);
