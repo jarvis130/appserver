@@ -843,47 +843,42 @@ class Payment extends BaseModel
 
             $postArr = json_decode($postStr, true);
 
-            if ($postArr['status'] == 0) {
-                $payment = Pay::where('pay_code', $juhepay3_code)->first();
+            $payment = Pay::where('pay_code', $juhepay3_code)->first();
 
-                if (!$payment) {
+            if (!$payment) {
+                echo 'fail';
+                return false;
+            }
+
+            $pay_id = $payment->pay_id;
+            $payment_config = $payment->pay_config;
+
+            $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
+
+            if(empty($juhepay_sign_key)){
+                echo 'fail';
+                return false;
+            }
+
+            $juhepay_notify3 = new Juhepay3Notify();
+
+            // 验证签名
+            $sign_result = $juhepay_notify3->getSignVeryfy($postArr, $juhepay_sign_key);
+
+            if (!$sign_result) {
+                echo 'fail';
+                return false;
+            }
+
+            if ($postArr['resultCode'] == '00') {
+                $do_result = self::afterPaySuccess($postArr['outTradeNo'], $pay_id, '聚合支付：' . $code);
+                if(!$do_result){
                     echo 'fail';
                     return false;
                 }
 
-                $pay_id = $payment->pay_id;
-                $payment_config = $payment->pay_config;
-
-                $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
-
-                if(empty($juhepay_sign_key)){
-                    echo 'fail';
-                    return false;
-                }
-
-                $juhepay_notify3 = new Juhepay3Notify();
-
-                // 验证签名
-                $sign_result = $juhepay_notify3->getSignVeryfy($postArr, $juhepay_sign_key);
-
-                if (!$sign_result) {
-                    echo 'fail';
-                    return false;
-                }
-
-                if ($postArr['resultCode'] == '00') {
-                    $do_result = self::afterPaySuccess($postArr['outTradeNo'], $pay_id, '聚合支付：' . $code);
-                    if(!$do_result){
-                        echo 'fail';
-                        return false;
-                    }
-
-                    echo 'success';
-                    return true;
-                } else {
-                    echo 'success';
-                    return true;
-                }
+                echo 'success';
+                return true;
             } else {
                 echo 'success';
                 return true;
