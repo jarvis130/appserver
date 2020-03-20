@@ -278,7 +278,7 @@ class Video extends BaseModel
 
     public function getCreatedatAttribute()
     {
-        return $this->add_time;
+        return date("Y-m-d H:i:s", $this->add_time);
     }
 
     public function getUpdatedatAttribute()
@@ -424,11 +424,13 @@ class Video extends BaseModel
 
         if (isset($category) && $category) {
             //获得所有扩展分类属于指定分类的所有商品ID
-            $extension_goods = GoodsExtendCategory::get_extension_goods(GoodsCategory::getCategoryIds($category));
-            $model->where(function ($query) use ($category, $extension_goods) {
-                $query->whereIn('goods.cat_id', GoodsCategory::getCategoryIds($category))
-                    ->orWhereIn('goods.goods_id', $extension_goods);
-            });
+//            $extension_goods = GoodsExtendCategory::get_extension_goods(GoodsCategory::getCategoryIds($category));
+//            $model->where(function ($query) use ($category, $extension_goods) {
+//                $query->whereIn('goods.cat_id', GoodsCategory::getCategoryIds($category))
+//                    ->orWhereIn('goods.goods_id', $extension_goods);
+//            });
+
+            $model->where('goods.cat_id', $category);
         }
 
         // 优惠活动
