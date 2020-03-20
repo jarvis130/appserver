@@ -643,7 +643,7 @@ class Video extends BaseModel
         }else{
             $model = Video::where(['is_delete' => 0, 'goods_id' => $product]);
 
-            $data = $model->with(['properties','propertie_info', 'tags', 'stock', 'attachments', 'actors', 'photos'])->first();
+            $data = $model->with(['properties','propertie_info', 'tags', 'stock', 'attachments', 'actors'])->first();
             //保证属性排序正确
             $product_data = $data->toArray();
 
