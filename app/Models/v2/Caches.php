@@ -33,7 +33,7 @@ class Caches extends BaseModel
                 }else{
                     // 刷新5小时之内更新的视频
                     $time = time() - 5 * 60 * 60;
-                    $res = Video::where('last_update', '>=', $time)->get(['goods_id']);
+                    $res = Video::where('last_update', '>=', $time)->where('is_real', 2)->get(['goods_id']);
                     foreach ($res as $key => $row) {
                         $attrid = $row['goods_id'];
                         Redis::del($code . ':' . $attrid);
