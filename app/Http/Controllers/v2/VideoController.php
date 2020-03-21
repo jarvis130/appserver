@@ -299,6 +299,24 @@ class VideoController extends Controller
         return $this->json($data);
     }
 
+    // 获取图片商品详情（图片列表）
+    public function imageInfo()
+    {
+        $rules = [
+            'page'     => 'required|integer|min:1',
+            'per_page' => 'required|integer|min:1',
+            'product'  => 'required|integer|min:1',
+        ];
+
+        if ($error = $this->validateInput($rules)) {
+            return $error;
+        }
+
+        $data = Video::getImageInfo($this->validated);
+
+        return $this->json($data);
+    }
+
     public function intro($id)
     {
         return Goods::getIntro($id);
