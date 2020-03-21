@@ -300,7 +300,7 @@ class VideoController extends Controller
     }
 
     // 获取图片商品详情（图片列表）
-    public function imageInfo()
+    public function getPhotoList()
     {
         $rules = [
             'page'     => 'required|integer|min:1',
@@ -312,7 +312,7 @@ class VideoController extends Controller
             return $error;
         }
 
-        $data = Video::getImageInfo($this->validated);
+        $data = Video::getPhotoList($this->validated);
 
         return $this->json($data);
     }
