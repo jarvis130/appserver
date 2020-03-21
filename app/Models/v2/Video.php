@@ -737,30 +737,16 @@ class Video extends BaseModel
     }
 
 
-    public static function getImageInfo(array $attributes)
+    public static function getPhotoList(array $attributes)
     {
         extract($attributes);
 
-        $key = 'image:info:' . $product.':'.$page;
+        $model = GoodsGallery::where('goods_id', $product);
+        $total = $model->count();
 
-        if(Redis::exists($key)){
-            $pageData = json_decode(Redis::get($key), true);
-            $total = $pageData['total'];
-            $data = $pageData['data'];
-        }else{
-            $model = GoodsGallery::where('goods_id', $product);
-            $total = $model->count();
+        $data = $model->orderBy('sort_order')->paginate($per_page)->toArray();
 
-            $data = $model->orderBy('sort_order')->paginate($per_page)->toArray();
-            $pageData = array(
-                'total' => $total,
-                'data' => $data
-            );
-
-            Redis::set($key, json_encode($pageData));
-        }
-
-        return self::formatBody(['photolist' => $data['data'], 'paged' => self::formatPaged($page, $per_page, $total)]);
+        return self::formatBody(['photoItem' => $data['data'], 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
 
