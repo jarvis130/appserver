@@ -760,7 +760,7 @@ class Video extends BaseModel
             Redis::set($key, json_encode($pageData));
         }
 
-        return self::formatBody(['image' => $data, 'paged' => self::formatPaged($page, $per_page, $total)]);
+        return self::formatBody(['photolist' => $data['data'], 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
 
 
