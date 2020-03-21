@@ -737,6 +737,33 @@ class Video extends BaseModel
     }
 
 
+    public static function getImageInfo(array $attributes)
+    {
+        extract($attributes);
+
+        $key = 'image:info:' . $product.':'.$page;
+
+        if(Redis::exists($key)){
+            $pageData = json_decode(Redis::get($key), true);
+            $total = $pageData['total'];
+            $data = $pageData['data'];
+        }else{
+            $model = GoodsGallery::where('goods_id', $product);
+            $total = $model->count();
+
+            $data = $model->orderBy('sort_order')->paginate($per_page)->toArray();
+            $pageData = array(
+                'total' => $total,
+                'data' => $data
+            );
+
+            Redis::set($key, json_encode($pageData));
+        }
+
+        return self::formatBody(['image' => $data, 'paged' => self::formatPaged($page, $per_page, $total)]);
+    }
+
+
     public static function getIntro($id)
     {
         if ($model = self::where('goods_id', $id)->first()) {
