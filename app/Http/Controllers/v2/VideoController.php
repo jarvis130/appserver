@@ -88,7 +88,7 @@ class VideoController extends Controller
             return $error;
         }
 
-        $data = Goods::getList($this->validated);
+        $data = Video::getList($this->validated);
 
         return $this->json($data);
     }
