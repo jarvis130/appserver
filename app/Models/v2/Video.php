@@ -747,15 +747,15 @@ class Video extends BaseModel
         $data = $model->orderBy('sort_order')->paginate($per_page)->toArray();
         $photoItem = $data['data'];
 
-        if($photoItem){
-            foreach ($photoItem as $value) {
-                $photo = formatPhoto($value['img_url'], $value['thumb_url'], config('app.file_resource_url'));
-                if (is_array($photo)) {
-                    $photoItem['img_url'] = $photo['large'];
-                    $photoItem['thumb_url'] = $photo['thumb'];
-                }
-            }
-        }
+//        if($photoItem){
+//            foreach ($photoItem as $value) {
+//                $photo = formatPhoto($value['img_url'], $value['thumb_url'], config('app.file_resource_url'));
+//                if (is_array($photo)) {
+//                    $photoItem['img_url'] = $photo['large'];
+//                    $photoItem['thumb_url'] = $photo['thumb'];
+//                }
+//            }
+//        }
 
         return self::formatBody(['photoItem' => $photoItem, 'paged' => self::formatPaged($page, $per_page, $total)]);
     }
