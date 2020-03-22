@@ -82,6 +82,7 @@ class VideoController extends Controller
             'keyword'         => 'string|min:1',
             'sort_key'        => 'string|min:1',
             'sort_value'      => 'required_with:sort_key|string|min:1',
+            'is_real'        => 'string|min:1',
         ];
 
         if ($error = $this->validateInput($rules)) {
