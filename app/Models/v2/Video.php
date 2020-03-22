@@ -749,7 +749,7 @@ class Video extends BaseModel
 
         if($photoItem){
             foreach ($photoItem as $value) {
-                $photo = formatPhoto($value['img_url'], $value['thumb_url']);
+                $photo = formatPhoto($value['img_url'], $value['thumb_url'], config('app.file_resource_url'));
                 if (is_array($photo)) {
                     $photoItem['img_url'] = $photo['large'];
                     $photoItem['thumb_url'] = $photo['thumb'];

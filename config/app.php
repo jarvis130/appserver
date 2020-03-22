@@ -14,6 +14,8 @@ return [
 
     'shop_h5' => env('SHOP_H5', ''),
 
+    'file_resource_url' => env('FILE_RESOURCE_URL', ''),
+
     'json_cdn' => env('JSON_CDN', ''),
 
     'hosts' => env('HOSTS', ''),
