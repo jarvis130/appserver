@@ -49,4 +49,34 @@ class GoodsGallery extends BaseModel
 
         return null;
     }
+
+    public function getImgUrlAttribute()
+    {
+        $photo = formatPhoto($this->attributes['img_original'], $this->attributes['img_url'], config('app.file_resource_url'));
+        if (is_array($photo)) {
+            return $photo['thumb'];
+        }else{
+            $this->attributes['img_url'];
+        }
+    }
+
+    public function getThumbUrlAttribute()
+    {
+        $photo = formatPhoto($this->attributes['img_original'], $this->attributes['thumb_url'], config('app.file_resource_url'));
+        if (is_array($photo)) {
+            return $photo['thumb'];
+        }else{
+            $this->attributes['thumb_url'];
+        }
+    }
+
+    public function getImgOriginalAttribute()
+    {
+        $photo = formatPhoto($this->attributes['img_original'], $this->attributes['thumb_url'], config('app.file_resource_url'));
+        if (is_array($photo)) {
+            return $photo['large'];
+        }else{
+            $this->attributes['img_original'];
+        }
+    }
 }
