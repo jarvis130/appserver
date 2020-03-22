@@ -274,6 +274,7 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.video.liked.list', 'VideoController@likedList');
     $router->post('ecapi.video.getWatchLog', 'VideoController@getWatchLog');
     $router->post('ecapi.video.airecommend.list', 'VideoController@aiRecommendList');
+    $router->post('ecapi.search.video.list', 'VideoController@search');
     //图片
     $router->post('ecapi.goods.gallery.list', 'VideoController@getPhotoList');
     //订单
