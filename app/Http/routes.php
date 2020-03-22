@@ -154,8 +154,6 @@ $router->group(['namespace' => 'v2','prefix' => 'v2', 'middleware' => ['xss']], 
     $router->get('ecapi.version.app.check', 'VersionController@checkApp');
     // 刷新缓存
     $router->post('ecapi.cache.refresh', 'CacheController@refresh');
-
-    $router->post('ecapi.goods.gallery.list', 'VideoController@getPhotoList');
 });
 
 //Authorization
@@ -278,7 +276,7 @@ $router->group(['prefix' => 'v2', 'namespace' => 'v2', 'middleware' => ['token',
     $router->post('ecapi.video.airecommend.list', 'VideoController@aiRecommendList');
     $router->post('ecapi.search.video.list', 'VideoController@search');
     //图片
-//    $router->post('ecapi.goods.gallery.list', 'VideoController@getPhotoList');
+    $router->post('ecapi.goods.gallery.list', 'VideoController@getPhotoList');
     //订单
     $router->post('ecapi.cart.createVideoOrder', 'CartController@createVideoOrder');
     // 评论
