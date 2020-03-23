@@ -364,15 +364,15 @@ class Video extends BaseModel
 
         $model = self::select('goods.*');
 
-        if ((isset($attr_value1) && $attr_value1) || (isset($attr_value2) && $attr_value2)) {
-            $model = $model->leftjoin('goods_video_attr', 'goods_video_attr.goods_id', '=', 'goods.goods_id');
-            if(isset($attr_value1) && $attr_value1){
-                $model = $model->Where('goods_video_attr.attr_value1' , '=', $attr_value1);
-            }
-            if(isset($attr_value2) && $attr_value2){
-                $model = $model->Where('goods_video_attr.attr_value2' , '=', $attr_value2);
-            }
-        }
+//        if ((isset($attr_value1) && $attr_value1) || (isset($attr_value2) && $attr_value2)) {
+//            $model = $model->leftjoin('goods_video_attr', 'goods_video_attr.goods_id', '=', 'goods.goods_id');
+//            if(isset($attr_value1) && $attr_value1){
+//                $model = $model->Where('goods_video_attr.attr_value1' , '=', $attr_value1);
+//            }
+//            if(isset($attr_value2) && $attr_value2){
+//                $model = $model->Where('goods_video_attr.attr_value2' , '=', $attr_value2);
+//            }
+//        }
 
         $model = $model->where($where);
 
@@ -420,6 +420,19 @@ class Video extends BaseModel
 
         if (isset($brand) && $brand) {
             $model->where('brand_id', $brand);
+        }
+
+        if ((isset($attr_value1) && $attr_value1)) {
+            //获得所有扩展分类属于指定分类的所有商品ID
+            $extension_goods = GoodsExtendCategory::get_extension_goods(GoodsCategory::getCategoryIds($category));
+            $model->where(function ($query) use ($category, $extension_goods) {
+                $query->whereIn('goods.cat_id', GoodsCategory::getCategoryIds($category))
+                    ->orWhereIn('goods.goods_id', $extension_goods);
+            });
+        }
+
+        if ((isset($attr_value2) && $attr_value2)) {
+            $model->where('goods.cat_id', $category);
         }
 
         if (isset($category) && $category) {
