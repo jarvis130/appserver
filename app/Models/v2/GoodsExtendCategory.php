@@ -35,6 +35,6 @@ class GoodsExtendCategory extends BaseModel
     //获得所有扩展分类属于指定分类的所有商品ID
     public static function get_extension_goods($cat = array())
     {
-        return self::whereIn('goods_cat.cat_id', $cat)->lists('goods_id')->toArray();
+        return self::whereIn('goods_cat.cat_id', $cat)->pluck('goods_id')->toArray();
     }
 }

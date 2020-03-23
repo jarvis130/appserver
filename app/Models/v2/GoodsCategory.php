@@ -72,7 +72,7 @@ class GoodsCategory extends BaseModel
         }
         $ids = GoodsCategory::where(function ($query) use ($id) {
             $query->WhereIn('parent_id', $id);
-        })->orderBy('cat_id', 'ASC')->lists('cat_id')->toArray();
+        })->orderBy('cat_id', 'ASC')->pluck('cat_id')->toArray();
         if (count($ids) > 0) {
             $cat_id = array_merge($cat_id, $ids);
             self::getAllCategory($ids);
