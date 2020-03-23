@@ -424,15 +424,15 @@ class Video extends BaseModel
 
         if ((isset($attr_value1) && $attr_value1)) {
             //获得所有扩展分类属于指定分类的所有商品ID
-            $extension_goods = GoodsExtendCategory::get_extension_goods(GoodsCategory::getCategoryIds($category));
-            $model->where(function ($query) use ($category, $extension_goods) {
-                $query->whereIn('goods.cat_id', GoodsCategory::getCategoryIds($category))
+            $extension_goods = GoodsExtendCategory::get_extension_goods(GoodsCategory::getCategoryIds($attr_value1));
+            $model->where(function ($query) use ($attr_value1, $extension_goods) {
+                $query->whereIn('goods.cat_id', GoodsCategory::getCategoryIds($attr_value1))
                     ->orWhereIn('goods.goods_id', $extension_goods);
             });
         }
 
         if ((isset($attr_value2) && $attr_value2)) {
-            $model->where('goods.cat_id', $category);
+            $model->where('goods.cat_id', $attr_value2);
         }
 
         if (isset($category) && $category) {
