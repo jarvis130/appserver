@@ -56,7 +56,7 @@ class GoodsGallery extends BaseModel
         if (is_array($photo)) {
             return $photo['thumb'];
         }else{
-            $this->attributes['img_url'];
+            return $this->attributes['img_url'];
         }
     }
 
@@ -66,7 +66,7 @@ class GoodsGallery extends BaseModel
         if (is_array($photo)) {
             return $photo['thumb'];
         }else{
-            $this->attributes['thumb_url'];
+            return $this->attributes['thumb_url'];
         }
     }
 
@@ -76,7 +76,12 @@ class GoodsGallery extends BaseModel
         if (is_array($photo)) {
             return $photo['large'];
         }else{
-            $this->attributes['img_original'];
+            return $this->attributes['img_original'];
         }
+    }
+
+    public function getDownloadImgOriginalAttribute()
+    {
+        return '';
     }
 }
