@@ -82,6 +82,11 @@ class GoodsGallery extends BaseModel
 
     public function getDownloadImgOriginalAttribute()
     {
-        return '';
+        $photo = formatPhoto($this->attributes['download_img_original'], $this->attributes['thumb_url'], config('app.file_resource_url'));
+        if (is_array($photo)) {
+            return $photo['large'];
+        }else{
+            return $this->attributes['download_img_original'];
+        }
     }
 }

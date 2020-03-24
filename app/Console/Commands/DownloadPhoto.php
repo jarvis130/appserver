@@ -19,7 +19,7 @@ class DownloadPhoto extends Command
      *
      * @var string
      */
-    protected $signature = 'download:photo {scope} {--rootDit=} {--subDir=}';
+    protected $signature = 'download:photo {--scope=} {--rootDit=} {--subDir=}';
 
     /**
      * The console command description.
@@ -48,7 +48,7 @@ class DownloadPhoto extends Command
      */
     public function handle()
     {
-        $scope = $this->argument('scope') ? $this->argument('scope') : 'all';
+        $scope = $this->option('scope') ? $this->option('scope') : 'all';
         $root_dit = $this->option('rootDit') ? $this->option('rootDit') : dirname(base_path()) . '/ecshop';
         $sub_dir = $this->option('subDir') ? $this->option('subDir') : 'data/photo';
 
@@ -74,7 +74,7 @@ class DownloadPhoto extends Command
                 exit('无效范围');
         }
 
-        while ($photos = $modle->limit($limit)->get()->toArray())
+        while ($photos = $modle->limit($limit)->get('p.*')->toArray())
         {
             foreach ($photos as $photo){
                 self::$scope($photo, $root_dit, $sub_dir);
