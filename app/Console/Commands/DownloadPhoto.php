@@ -74,7 +74,7 @@ class DownloadPhoto extends Command
                 exit('无效范围');
         }
 
-        while ($photos = $modle->limit($limit)->get('p.*')->toArray())
+        while ($photos = $modle->limit($limit)->get(['p.*'])->toArray())
         {
             foreach ($photos as $photo){
                 self::$scope($photo, $root_dit, $sub_dir);
