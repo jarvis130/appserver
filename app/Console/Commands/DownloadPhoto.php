@@ -49,8 +49,8 @@ class DownloadPhoto extends Command
     public function handle()
     {
         $scope = $this->argument('scope') ? $this->argument('scope') : 'all';
-        $root_dit = $this->argument('rootDit') ? $this->argument('rootDit') : dirname(base_path()) . '/ecshop';
-        $sub_dir = $this->argument('subDir') ? $this->argument('subDir') : 'data/photo';
+        $root_dit = $this->option('rootDit') ? $this->option('rootDit') : dirname(base_path()) . '/ecshop';
+        $sub_dir = $this->option('subDir') ? $this->option('subDir') : 'data/photo';
 
         $limit = 1000;
 
