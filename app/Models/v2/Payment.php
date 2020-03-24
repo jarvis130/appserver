@@ -7,6 +7,12 @@ use App\Helper\Token;
 use App\Helper\Header;
 use App\Services\Payment\Alipay\AlipayRSA;
 use App\Services\Payment\Alipay\AlipayNotify;
+use App\Services\Payment\Juhepay\Juhepay1;
+use App\Services\Payment\Juhepay\Juhepay1Notify;
+use App\Services\Payment\Juhepay\Juhepay2;
+use App\Services\Payment\Juhepay\Juhepay2Notify;
+use App\Services\Payment\Juhepay\Juhepay3;
+use App\Services\Payment\Juhepay\Juhepay3Notify;
 use App\Services\Payment\wxpay\WxPay;
 use App\Services\Payment\wxpay\WxResponse;
 use App\Services\Payment\Unionpay\Union;
@@ -35,8 +41,8 @@ class Payment extends BaseModel
         $userAgent = Header::getUserAgent();
         
         $model = array();
-        $response = Authorize::info();
-        if ($response['result'] == 'success') {
+//        $response = Authorize::info();
+//        if ($response['result'] == 'success') {
             if (true) {
                 //余额支付
                 if ($arr = Pay::where(['enabled' => 1, 'pay_code' => 'balance'])->select('pay_code as code','pay_name as name','pay_desc as desc')->first()) {
@@ -90,8 +96,22 @@ class Payment extends BaseModel
                         array_push($model, $arr);
                     }
                 }
+
+                //------------------  聚合支付 ------------------//
+                // 获取订单金额
+                $orderinfo = Order::where(['order_id'=>$order])->first();
+                $amount = $orderinfo->order_amount;
+
+                // 循环获取聚合支付
+                for ($i = 1; $i <= 3; $i++){
+                    $juhepay_code = 'juhepay' . $i;
+                    $arr = self::getJuhePayMethodList($juhepay_code, $amount);
+                    if($arr){
+                        $model = array_merge($model, $arr);
+                    }
+                }
             }
-        }
+//        }
 
         return self::formatBody(['payment_types' => $model]);
     }
@@ -107,6 +127,52 @@ class Payment extends BaseModel
         }
 
         $shop_name = ShopConfig::findByCode('shop_name');
+
+        //-----------  聚合支付1  -----------//
+        $juhepay1 = new Juhepay1();
+        $juhepay1_pay_methods = $juhepay1->getPayMethodCodeList();
+        if (in_array($code, $juhepay1_pay_methods)) {
+            $result = $juhepay1->pay($code, $order);
+            if($result['code'] == 0){
+                return self::formatBody([
+                    'order' => $order,
+                    'juhepay' => ['url' => $result['data']['url']],
+                ]);
+            }else{
+                return self::formatError(self::BAD_REQUEST, $result['message']);
+            }
+        }
+
+        //-----------  聚合支付2  -----------//
+        $juhepay2 = new Juhepay2();
+        $juhepay2_pay_methods = $juhepay2->getPayMethodCodeList();
+        if (in_array($code, $juhepay2_pay_methods)) {
+            $result = $juhepay2->pay($code, $order);
+            if($result['code'] == 0){
+                return self::formatBody([
+                    'order' => $order,
+                    'juhepay' => ['url' => $result['data']['url']],
+                ]);
+            }else{
+                return self::formatError(self::BAD_REQUEST, $result['message']);
+            }
+        }
+
+        //-----------  聚合支付3  -----------//
+        $juhepay3 = new Juhepay3();
+        $juhepay3_pay_methods = $juhepay3->getPayMethodCodeList();
+        if (in_array($code, $juhepay3_pay_methods)) {
+            $result = $juhepay3->pay($code, $order);
+            if($result['code'] == 0){
+                return self::formatBody([
+                    'order' => $order,
+                    'juhepay' => ['url' => $result['data']['url']],
+                ]);
+            }else{
+                return self::formatError(self::BAD_REQUEST, $result['message']);
+            }
+        }
+
         // 查询支付方式id pay_id
         $paymentModel = Pay::where('pay_code',$code)->select('pay_id','pay_code','pay_name','enabled','type')->first();
         $pay_id = $paymentModel?$paymentModel->pay_id:65535;
@@ -646,6 +712,179 @@ class Payment extends BaseModel
     public static function notify($code)
     {
         Log::info('支付开始回调');
+
+        //--------- 聚合支付1 notify ----------
+        $juhepay1 = new Juhepay1();
+        $juhepay1_code = $juhepay1->pay_code;
+        $juhepay1_pay_methods = $juhepay1->getPayMethodCodeList();
+        if (in_array($code, $juhepay1_pay_methods)) {
+            if (version_compare(PHP_VERSION, '5.6.0', '<')) {
+                if (!empty($GLOBALS['HTTP_RAW_POST_DATA'])) {
+                    $postStr = $GLOBALS['HTTP_RAW_POST_DATA'];
+                } else {
+                    $postStr = file_get_contents('php://input');
+                }
+            } else {
+                $postStr = file_get_contents('php://input');
+            }
+            Log::info($juhepay1_code . '.notify:'. $postStr);
+
+            $postArr = json_decode($postStr, true);
+
+            if ($postArr['status'] == 0) {
+                $payment = Pay::where('pay_code', $juhepay1_code)->first();
+
+                if (!$payment) {
+                    echo 'fail';
+                    return false;
+                }
+
+                $pay_id = $payment->pay_id;
+                $payment_config = $payment->pay_config;
+
+                $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
+
+                if(empty($juhepay_sign_key)){
+                    echo 'fail';
+                    return false;
+                }
+
+                $juhepay_notify1 = new Juhepay1Notify();
+
+                // 验证签名
+                $sign_result = $juhepay_notify1->getSignVeryfy($postArr, $juhepay_sign_key);
+
+                if (!$sign_result) {
+                    echo 'fail';
+                    return false;
+                }
+
+                if ($postArr['result_code'] == 0) {
+                    $do_result = self::afterPaySuccess($postArr['out_trade_no'], $pay_id, '聚合支付：' . $code);
+                    if(!$do_result){
+                        echo 'fail';
+                        return false;
+                    }
+
+                    echo 'success';
+                    return true;
+                } else {
+                    echo 'success';
+                    return true;
+                }
+            } else {
+                echo 'success';
+                return true;
+            }
+        }
+
+        //--------- 聚合支付2 notify ----------
+        $juhepay2 = new Juhepay2();
+        $juhepay2_code = $juhepay2->pay_code;
+        $juhepay2_pay_methods = $juhepay2->getPayMethodCodeList();
+        if (in_array($code, $juhepay2_pay_methods)) {
+            $postStr = $_POST['data'];
+            Log::info($juhepay2_code . '.notify:'. $postStr);
+
+            $payment = Pay::where('pay_code', $juhepay2_code)->first();
+
+            if (!$payment) {
+                echo 'FAIL';
+                return false;
+            }
+
+            $pay_id = $payment->pay_id;
+            $payment_config = $payment->pay_config;
+
+            $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
+            $juhepay_private_key = Pay::getConfigValueByName($payment_config, 'juhepay_private_key');
+
+            if(empty($juhepay_sign_key)){
+                echo 'FAIL';
+                return false;
+            }
+
+            $juhepay_notify2 = new Juhepay2Notify();
+
+            // 解密
+            $postStr = $juhepay_notify2->decrypt($postStr, $juhepay_private_key);
+            $postArr = json_decode($postStr, true);
+
+            // 验证签名
+            $sign_result = $juhepay_notify2->getSignVeryfy($postArr, $juhepay_sign_key);
+
+            if (!$sign_result) {
+                echo 'FAIL';
+                return false;
+            }
+
+            if ($postArr['payStateCode'] == '00') {
+                $do_result = self::afterPaySuccess($postArr['orderNo'], $pay_id, '聚合支付：' . $code);
+                if(!$do_result){
+                    echo 'FAIL';
+                    return false;
+                }
+
+                echo 'SUCCESS';
+                return true;
+            } else {
+                echo 'SUCCESS';
+                return true;
+            }
+        }
+
+        //--------- 聚合支付3 notify ----------
+        $juhepay3 = new Juhepay3();
+        $juhepay3_code = $juhepay3->pay_code;
+        $juhepay3_pay_methods = $juhepay3->getPayMethodCodeList();
+        if (in_array($code, $juhepay3_pay_methods)) {
+            $postStr = $_POST['reqData'];
+            Log::info($juhepay3_code . '.notify:'. $postStr);
+
+            $postArr = json_decode($postStr, true);
+
+            $payment = Pay::where('pay_code', $juhepay3_code)->first();
+
+            if (!$payment) {
+                echo 'fail';
+                return false;
+            }
+
+            $pay_id = $payment->pay_id;
+            $payment_config = $payment->pay_config;
+
+            $juhepay_sign_key = Pay::getConfigValueByName($payment_config, 'juhepay_sign_key');
+
+            if(empty($juhepay_sign_key)){
+                echo 'fail';
+                return false;
+            }
+
+            $juhepay_notify3 = new Juhepay3Notify();
+
+            // 验证签名
+            $sign_result = $juhepay_notify3->getSignVeryfy($postArr, $juhepay_sign_key);
+
+            if (!$sign_result) {
+                echo 'fail';
+                return false;
+            }
+
+            if ($postArr['resultCode'] == '00') {
+                $do_result = self::afterPaySuccess($postArr['outTradeNo'], $pay_id, '聚合支付：' . $code);
+                if(!$do_result){
+                    echo 'fail';
+                    return false;
+                }
+
+                echo 'success';
+                return true;
+            } else {
+                echo 'success';
+                return true;
+            }
+        }
+
         // 查询支付方式id pay_id
         $paymentModel = Pay::where('pay_code',$code)->select('pay_id','pay_code','pay_name','enabled','type')->first();
         $pay_id = $paymentModel?$paymentModel->pay_id:65535;
@@ -1157,6 +1396,162 @@ class Payment extends BaseModel
         }
 
         return $config;
+    }
+
+    // 获取聚合支付支付方式列表
+    private static function getJuhePayMethodList($pay_code, $amount)
+    {
+        $result = array();
+        if ($arr = Pay::where(['enabled' => 1, 'pay_code' => $pay_code])->select('pay_code as code','pay_name as name','pay_desc as desc', 'pay_config as config')->first()) {
+            $arr = $arr->toArray();
+            $payment_config = $arr['config'];
+            unset($arr['config']);
+
+            $juhepay_pay_method = Pay::getConfigValueByName($payment_config, 'juhepay_pay_method');
+            $juhepay_pay_method = trim($juhepay_pay_method);
+            if ($juhepay_pay_method) {
+                $name = $arr['name'];
+                // 获取支持的支付方式
+                $pay_methods = explode(',', $juhepay_pay_method);
+                foreach ($pay_methods as $pay_method){
+                    switch ($pay_method){
+                        case '1':
+                            $quota_key = 'juhepay_alipay_quota';
+                            $arr['code'] = $pay_code . '.alipay';
+                            $arr['name'] = $name . '-支付宝';
+                            break;
+                        case '2':
+                            $quota_key = 'juhepay_wxpay_quota';
+                            $arr['code'] = $pay_code . '.wxpay';
+                            $arr['name'] = $name . '-微信支付';
+                            break;
+                        case '3':
+                            $quota_key = 'juhepay_qqpay_quota';
+                            $arr['code'] = $pay_code . '.qqpay';
+                            $arr['name'] = $name . '-QQ支付';
+                            break;
+                        case '4':
+                            $quota_key = 'juhepay_jdpay_quota';
+                            $arr['code'] = $pay_code . '.jdpay';
+                            $arr['name'] = $name . '-京东支付';
+                            break;
+                        case '5':
+                            $quota_key = 'juhepay_kjpay_quota';
+                            $arr['code'] = $pay_code . '.kjpay';
+                            $arr['name'] = $name . '-快捷支付';
+                            break;
+                        case '6':
+                            $quota_key = 'juhepay_alipay_hb_quota';
+                            $arr['code'] = $pay_code . '.alipay_hb';
+                            $arr['name'] = $name . '-支付宝红包';
+                            break;
+                    }
+
+                    $usable = self::checkJuhePayAmountQuota($amount, $payment_config, $quota_key); // 当前支付方式是否可用
+
+                    if($usable){
+                        array_push($result, $arr);
+                    }
+                }
+            }
+        }
+
+        return $result;
+    }
+
+    // 校验聚合支付金额限额
+    private static function checkJuhePayAmountQuota($amount, $payment_config, $quota_key)
+    {
+        $usable = true;
+        // 校验金额
+        $quota = Pay::getConfigValueByName($payment_config, $quota_key);
+        $quota = trim($quota);
+        if($quota){
+            if(strpos($quota,'-')){  // 范围限定
+                $quota_arr = explode('-', $quota);
+                $quota_min = min($quota_arr);
+                $quota_max = max($quota_arr);
+                if($amount < $quota_min || $amount > $quota_max){
+                    $usable = false;
+                }
+            }else{  // 值限定
+                $quota_arr = explode(',', $quota);
+                if(!in_array($amount, $quota_arr)){
+                    $usable = false;
+                }
+            }
+        }
+        return $usable;
+    }
+
+    // 获取聚合支付的支付方式编码列表
+    public static function getJuhePayMethodCodeList()
+    {
+        $pay_methods = array();
+
+        $juhepay1 = new Juhepay1();
+        $juhepay1_pay_methods = $juhepay1->getPayMethodCodeList();
+        $juhepay2 = new Juhepay2();
+        $juhepay2_pay_methods = $juhepay2->getPayMethodCodeList();
+        $juhepay3 = new Juhepay3();
+        $juhepay3_pay_methods = $juhepay3->getPayMethodCodeList();
+
+        $pay_methods = array_merge($pay_methods, $juhepay1_pay_methods);
+        $pay_methods = array_merge($pay_methods, $juhepay2_pay_methods);
+        $pay_methods = array_merge($pay_methods, $juhepay3_pay_methods);
+
+        return $pay_methods;
+    }
+
+    // 支付成功处理
+    public static function afterPaySuccess($order_sn, $pay_id, $pay_name){
+        // 查询未付款订单
+        $order = Order::findUnpayedBySN($order_sn);
+
+        if(!$order){
+            return true;
+        }
+
+        /* 修改订单状态 */
+        $order->pay_time = time();
+        $order->order_status = Order::OS_CONFIRMED;
+        $order->pay_status = Order::PS_PAYED;
+        $order->pay_id = $pay_id;
+        $order->pay_name = $pay_name;
+        $order->money_paid += $order->order_amount;
+        $order->order_amount = 0;
+        $order->save();
+
+        /* 处理虚拟卡商品 */
+        $result = Order::deal_virtual_card_after_payed($order->order_id);
+        if($result){
+            // 修改订单状态
+            $order->order_status = Order::OS_SPLITED;
+            $order->pay_status = Order::PS_PAYED;
+            $order->shipping_status = Order::SS_RECEIVED;
+            $order->save();
+        }
+
+        OrderAction::toCreateOrUpdate($order->order_id, $order->order_status, $order->shipping_status, $order->pay_status, $pay_name);
+        AffiliateLog::affiliate($order->order_id);
+        // 修改pay_log状态
+        PayLog::where('order_id', $order->order_id)->update(['is_paid' => 1]);
+        Erp::order($order->order_sn);
+        //发送短信
+        $params = [
+            'order_sn' => $order->order_sn,
+            'consignee' => $order->consignee['name'],//收货人姓名
+            'tel' => $order->tel,//收货人手机号
+        ];
+        Sms::sendSms('sms_order_payed',$params,null);//消费者支付订单时发商家
+        $params = [
+            'order_sn' => $order->order_sn,
+            'money_paid' => $order->money_paid,//支付金额
+        ];
+        Sms::sendSms('sms_order_payed_to_customer',$params,$order->tel);//消费者支付订单时发消费者
+        Log::info('notify_is_success::order:'. json_encode($order));
+
+        return true;
     }
 
     public function getDescAttribute()

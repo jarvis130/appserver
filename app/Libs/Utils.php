@@ -27,6 +27,21 @@ class Utils {
         return $data;
     }
 
+    /**
+     * 根据二维数组某个字段的值查找数组
+     */
+    public static function filter_by_value($array, $index, $value){
+        if(is_array($array) && count($array)>0)
+        {
+            foreach(array_keys($array) as $key){
+                $temp[$key] = $array[$key][$index];
+                if ($temp[$key] == $value){
+                    $newarray[] = $array[$key];
+                }
+            }
+        }
+        return $newarray;
+    }
 }
 
 ?>

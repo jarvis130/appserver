@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Libs;
+namespace App\Libs\Ecshop;
 
 /**
  * ECSHOP 加密解密类

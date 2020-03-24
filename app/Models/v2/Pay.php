@@ -2,6 +2,7 @@
 
 namespace App\Models\v2;
 
+use App\Libs\Utils;
 use App\Models\BaseModel;
 
 class Pay extends BaseModel
@@ -19,5 +20,18 @@ class Pay extends BaseModel
             return true;
         }
         return false;
+    }
+
+    public static function getPayment($pay_code)
+    {
+        $payment = self::where('pay_code', $pay_code)->where('enabled', '1')->first();
+        return $payment;
+    }
+
+    public static function getConfigValueByName($pay_config, $name)
+    {
+        $result = unserialize($pay_config);
+        $result = Utils::filter_by_value($result, 'name', $name);
+        return $result[0]['value'];
     }
 }
