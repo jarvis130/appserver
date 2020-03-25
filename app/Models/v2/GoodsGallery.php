@@ -52,41 +52,33 @@ class GoodsGallery extends BaseModel
 
     public function getImgUrlAttribute()
     {
-        $photo = formatPhoto($this->attributes['img_original'], $this->attributes['img_url'], config('app.file_resource_url'));
-        if (is_array($photo)) {
-            return $photo['thumb'];
-        }else{
-            return $this->attributes['img_url'];
-        }
+        return $this->getPhotoFullUrl($this->attributes['img_url']);
     }
 
     public function getThumbUrlAttribute()
     {
-        $photo = formatPhoto($this->attributes['img_original'], $this->attributes['thumb_url'], config('app.file_resource_url'));
-        if (is_array($photo)) {
-            return $photo['thumb'];
-        }else{
-            return $this->attributes['thumb_url'];
-        }
+        return $this->getPhotoFullUrl($this->attributes['thumb_url']);
     }
 
     public function getImgOriginalAttribute()
     {
-        $photo = formatPhoto($this->attributes['img_original'], $this->attributes['thumb_url'], config('app.file_resource_url'));
-        if (is_array($photo)) {
-            return $photo['large'];
-        }else{
-            return $this->attributes['img_original'];
-        }
+        return $this->getPhotoFullUrl($this->attributes['img_original']);
     }
 
     public function getDownloadImgOriginalAttribute()
     {
-        $photo = formatPhoto($this->attributes['download_img_original'], $this->attributes['thumb_url'], config('app.file_resource_url'));
-        if (is_array($photo)) {
-            return $photo['large'];
+        return $this->getPhotoFullUrl($this->attributes['download_img_original']);
+    }
+
+    private function getPhotoFullUrl($img)
+    {
+        if($img == null) {
+            return '';
         }else{
-            return $this->attributes['download_img_original'];
+            if (!preg_match('/^http/', $img)  &&!preg_match('/^https/', $img)) {
+                $img = config('app.file_resource_url').'/'.$img ;
+            }
+            return $img;
         }
     }
 }

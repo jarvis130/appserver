@@ -3,7 +3,6 @@
 namespace App\Console\Commands;
 
 use App\Libs\Ecshop\Image AS EcshopImage;
-use App\Models\v2\Goods;
 use App\Models\v2\GoodsGallery;
 use App\Models\v2\ShopConfig;
 use Illuminate\Console\Command;
@@ -54,21 +53,21 @@ class DownloadPhoto extends Command
 
         $limit = 1000;
 
-        $modle = Goods::query()->from('goods as g')
+        $modle = GoodsGallery::query()->from('goods as g')
             ->leftjoin('goods_gallery as p', 'p.goods_id','=','g.goods_id')
             ->where('g.is_real', 3);
         switch ($scope){
             case 'all':
                 $modle->where(function ($query) {
-                    $query->where('thumb_url', '')
-                        ->orWhere('download_img_original', '');
+                    $query->where('p.thumb_url', '')
+                        ->orWhere('p.download_img_original', '');
                 });
                 break;
             case 'original':
-                $modle->where('download_img_original', '');
+                $modle->where('p.download_img_original', '');
                 break;
             case 'thumb':
-                $modle->where('thumb_url', '');
+                $modle->where('p.thumb_url', '');
                 break;
             default:
                 exit('无效范围');
@@ -80,6 +79,9 @@ class DownloadPhoto extends Command
                 self::$scope($photo, $root_dit, $sub_dir);
             }
         }
+
+        echo "处理成功";
+        return true;
     }
 
 
