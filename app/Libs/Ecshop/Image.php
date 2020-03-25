@@ -431,7 +431,7 @@ class Image
     {
         $rand_name = time() . sprintf("%03d", mt_rand(1,999));
         $img_ext = substr($source_img, strrpos($source_img, '.'));
-        $sub_sub_dir = date('Ym', time()) . '/' . $goods_id;
+        $sub_sub_dir = date('Ymd', time()) . '/' . $goods_id;
 
         $full_dir = $root_dit.'/'.$sub_dir.'/'.$sub_sub_dir;
         $format_dir = $sub_dir.'/'.$sub_sub_dir;

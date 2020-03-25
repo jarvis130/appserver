@@ -110,7 +110,7 @@ class DownloadPhoto extends Command
             return true;
         }
 
-        $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . date('Ym') . '/' . $photo['goods_id'] . '/source/';
+        $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . date('Ymd') . '/' . $photo['goods_id'] . '/source/';
 
         $original_temp_filename = EcshopImage::download_image($photo['img_original'], $temp_dir);
 
@@ -151,7 +151,7 @@ class DownloadPhoto extends Command
             self::$thumb_height = intval(ShopConfig::findByCode('thumb_height'));
         }
 
-        $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . date('Ym') . '/' . $photo['goods_id'] . '/thumb/';
+        $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . date('Ymd') . '/' . $photo['goods_id'] . '/thumb/';
 
         if(self::$thumb_width > 0 || self::$thumb_height > 0){
             $thumb_temp_filename = EcshopImage::make_thumb($photo['img_original'], self::$thumb_width, self::$thumb_height, $temp_dir);
