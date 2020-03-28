@@ -50,27 +50,29 @@ class DownloadPhoto extends Command
 
         $limit = 1000;
 
-        $modle = GoodsGallery::query()->from('goods as g')
+        $model = GoodsGallery::query()->from('goods as g')
             ->leftjoin('goods_gallery as p', 'p.goods_id','=','g.goods_id')
             ->where('g.is_real', 3);
         switch ($scope){
             case 'all':
-                $modle->where(function ($query) {
+                $model->where(function ($query) {
                     $query->where('p.thumb_url', '')
                         ->orWhere('p.download_img_original', '');
                 });
                 break;
             case 'original':
-                $modle->where('p.download_img_original', '');
+                $model->where('p.download_img_original', '');
                 break;
             case 'thumb':
-                $modle->where('p.thumb_url', '');
+                $model->where('p.thumb_url', '');
                 break;
             default:
                 exit('无效范围');
         }
 
-        while ($photos = $modle->limit($limit)->get(['p.*', 'g.add_time'])->toArray())
+        $model->orderBy('g.add_time', 'DESC');
+
+        while ($photos = $model->limit($limit)->get(['p.*', 'g.add_time'])->toArray())
         {
             foreach ($photos as $photo){
                 $date = date('Ymd', $photo['add_time']);
