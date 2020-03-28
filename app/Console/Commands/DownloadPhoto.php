@@ -150,14 +150,12 @@ class DownloadPhoto extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $photo['goods_id'] . '/thumb/';
 
-        $thumb_temp_filename = EcshopImage::make_thumb($photo['img_original'], 0.6, $temp_dir);
+        $thumb_temp_fullname = self::make_thumb($photo['img_original'], $temp_dir);
 
-        if (!$thumb_temp_filename)
+        if (!$thumb_temp_fullname)
         {
             return false;
         }
-
-        $thumb_temp_fullname = $temp_dir . $thumb_temp_filename;
 
         /* 重新格式化图片名称 */
         $thumb_url = EcshopImage::reformat_image_name('gallery_thumb', $photo['goods_id'], $thumb_temp_fullname, 'thumb', $root_dit, $sub_dir, $date);
@@ -170,5 +168,60 @@ class DownloadPhoto extends Command
             ]);
 
         return true;
+    }
+
+    /**
+     * 压缩
+     * @param $img string 图片
+     * @param $dir string 缩略图存放路径
+     * @return string
+     */
+    private static function make_thumb($img, $dir)
+    {
+        // 判断是否本地图片
+        if (!preg_match('/^http/', $img)  && !preg_match('/^https/', $img)) {
+            $is_local_img = true;
+        } else {
+            $is_local_img = false;
+        }
+
+        // 网络图片需要先下载
+        if(!$is_local_img){
+            $thumb_filename = EcshopImage::download_image($img, $dir);
+            $img = $dir . $thumb_filename;
+        }
+
+        // 获取图片大小
+        $size = filesize($img);
+
+        // 计算压缩比例
+        if($size <= 100 * 1024) {  // 如果小于等于100K则不压缩
+            $percent = 1;
+        }elseif($size > 100 * 1024 && $size <= 500 * 1024) {  // 如果大于100K、小于等于500K则压缩至80%
+            $percent = 0.8;
+        }elseif($size > 500 * 1024 && $size <= 1000 * 1024) {  // 如果大于500K、小于等于1M则压缩至60%
+            $percent = 0.6;
+        }elseif($size > 1000 * 1024 && $size <= 2000 * 1024) {  // 如果大于1M、小于等于2M则压缩至40%
+            $percent = 0.4;
+        }elseif($size > 2000 * 1024 && $size <= 3000 * 1024) {  // 如果大于1M、小于等于3M则压缩至20%
+            $percent = 0.2;
+        }else{  // 如果大于3M则压缩至10%
+            $percent = 0.1;
+        }
+
+        if($percent == 1){
+            $thumb = $img;
+        }else{
+            $thumb_filename = EcshopImage::make_thumb($img, $percent, $dir);
+            $img = $dir . $thumb_filename;
+            $thumb = self::make_thumb($img, $dir);
+
+            // 删除原图
+            if($thumb != $img){
+                @unlink($img);
+            }
+        }
+
+        return $thumb;
     }
 }
