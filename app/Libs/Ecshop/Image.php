@@ -427,11 +427,15 @@ class Image
      * 格式化图片名称（按目录存储）
      *
      */
-    public static function reformat_image_name($type, $goods_id, $source_img, $position, $root_dit, $sub_dir)
+    public static function reformat_image_name($type, $goods_id, $source_img, $position, $root_dit, $sub_dir, $date = null)
     {
         $rand_name = time() . sprintf("%03d", mt_rand(1,999));
         $img_ext = substr($source_img, strrpos($source_img, '.'));
-        $sub_sub_dir = date('Ymd', time()) . '/' . $goods_id;
+
+        if(empty($date)){
+            $date = date('Ymd');
+        }
+        $sub_sub_dir = $date . '/' . $goods_id;
 
         $full_dir = $root_dit.'/'.$sub_dir.'/'.$sub_sub_dir;
         $format_dir = $sub_dir.'/'.$sub_sub_dir;
