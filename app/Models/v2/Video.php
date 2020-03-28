@@ -476,6 +476,12 @@ class Video extends BaseModel
 
         $total = $model->count();
 
+        /* 图库默认按时间倒叙排序 */
+        if(isset($is_real) && $is_real == 3 && !isset($sort_key)){
+            $sort_key = self::DATE;
+            $sort_value = '2';
+        }
+
         if (isset($sort_key)) {
             switch ($sort_value) {
                 case '1':
