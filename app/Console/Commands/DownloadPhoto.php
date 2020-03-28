@@ -27,9 +27,6 @@ class DownloadPhoto extends Command
      */
     protected $description = 'download photo';
 
-    private static $thumb_width = null;
-    private static $thumb_height = null;
-
     /**
      * Create a new command instance.
      *
@@ -149,18 +146,9 @@ class DownloadPhoto extends Command
             return true;
         }
 
-        if(self::$thumb_width === null && self::$thumb_height === null){
-            self::$thumb_width = intval(ShopConfig::findByCode('thumb_width'));
-            self::$thumb_height = intval(ShopConfig::findByCode('thumb_height'));
-        }
-
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $photo['goods_id'] . '/thumb/';
 
-        if(self::$thumb_width > 0 || self::$thumb_height > 0){
-            $thumb_temp_filename = EcshopImage::make_thumb($photo['img_original'], self::$thumb_width, self::$thumb_height, $temp_dir);
-        }else{
-            $thumb_temp_filename = EcshopImage::download_image($photo['img_original'], $temp_dir);
-        }
+        $thumb_temp_filename = EcshopImage::make_thumb($photo['img_original'], 0.8, $temp_dir);
 
         if (!$thumb_temp_filename)
         {
