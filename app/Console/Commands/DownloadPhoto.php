@@ -150,7 +150,7 @@ class DownloadPhoto extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $photo['goods_id'] . '/thumb/';
 
-        $thumb_temp_filename = EcshopImage::make_thumb($photo['img_original'], 0.8, $temp_dir);
+        $thumb_temp_filename = EcshopImage::make_thumb($photo['img_original'], 0.6, $temp_dir);
 
         if (!$thumb_temp_filename)
         {
