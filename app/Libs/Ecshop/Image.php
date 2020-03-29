@@ -412,7 +412,15 @@ class Image
         //确认文件是否生成
         if (file_exists($dir . $filename))
         {
-            return $filename;
+            // 获取图片大小
+            $size = filesize($dir . $filename);
+            // 确认文件大小是否正常
+            if($size > 0){
+                return $filename;
+            }else{  // 如果文件大小小于等于0，则删除文件，并返回false
+                @unlink($dir . $filename);
+                return false;
+            }
         }
         else
         {

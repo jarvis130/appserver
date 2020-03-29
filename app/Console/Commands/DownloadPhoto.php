@@ -188,6 +188,9 @@ class DownloadPhoto extends Command
         // 网络图片需要先下载
         if(!$is_local_img){
             $thumb_filename = EcshopImage::download_image($img, $dir);
+            if(!$thumb_filename){
+                return false;
+            }
             $img = $dir . $thumb_filename;
         }
 
