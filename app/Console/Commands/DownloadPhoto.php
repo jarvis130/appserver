@@ -200,7 +200,7 @@ class DownloadPhoto extends Command
         // 计算压缩比例
         if($size <= 50 * 1024) {  // 如果小于等于50K则不压缩
             $percent = 1;
-        }elseif($size > 50 * 1024 && $size <= 500 * 1024) {  // 如果大于100K、小于等于500K则压缩至80%
+        }elseif($size > 50 * 1024 && $size <= 500 * 1024) {  // 如果大于50K、小于等于500K则压缩至80%
             $percent = 0.8;
         }elseif($size > 500 * 1024 && $size <= 1000 * 1024) {  // 如果大于500K、小于等于1M则压缩至60%
             $percent = 0.6;
