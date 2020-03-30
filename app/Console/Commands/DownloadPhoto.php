@@ -5,12 +5,11 @@ namespace App\Console\Commands;
 use App\Libs\Ecshop\Image AS EcshopImage;
 use App\Models\v2\Goods;
 use App\Models\v2\GoodsGallery;
-use App\Models\v2\ShopConfig;
 use Illuminate\Console\Command;
 
 
 set_time_limit(0); //解除PHP脚本时间30s限制
-ini_set('memory_limit','128M');//修改内存值
+ini_set('memory_limit','256M');//修改内存值
 
 class DownloadPhoto extends Command
 {
