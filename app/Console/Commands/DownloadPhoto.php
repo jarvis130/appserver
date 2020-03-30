@@ -148,7 +148,7 @@ class DownloadPhoto extends Command
      */
     private static function normal($photo, $root_dit, $sub_dir, $date)
     {
-        if($photo['img_url'] != $photo['img_original']){
+        if($photo['img_url'] && $photo['img_url'] != $photo['img_original']){
             return true;
         }
 
