@@ -154,7 +154,7 @@ class DownloadPhoto extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $photo['goods_id'] . '/normal/';
 
-        $thumb_temp_fullname = self::make_thumb($photo['img_original'], $temp_dir);
+        $thumb_temp_fullname = self::make_thumb($photo['img_original'], $temp_dir, 1);
 
         if (!$thumb_temp_fullname)
         {
@@ -215,7 +215,7 @@ class DownloadPhoto extends Command
      * @param $type int 类型 1：普通图 2：缩略图
      * @return string
      */
-    private static function make_thumb($img, $dir, $type = 1)
+    private static function make_thumb($img, $dir, $type)
     {
         // 判断是否本地图片
         if (!preg_match('/^http/', $img)  && !preg_match('/^https/', $img)) {
@@ -259,7 +259,7 @@ class DownloadPhoto extends Command
      * @param $type int 类型 1：普通图 2：缩略图
      * @return float
      */
-    private static function get_thumb_percent($img, $type = 1)
+    private static function get_thumb_percent($img, $type)
     {
         // 获取图片大小
         $size = filesize($img);
