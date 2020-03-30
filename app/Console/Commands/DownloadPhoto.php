@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Libs\Ecshop\Image AS EcshopImage;
+use App\Models\v2\Goods;
 use App\Models\v2\GoodsGallery;
 use App\Models\v2\ShopConfig;
 use Illuminate\Console\Command;
@@ -57,14 +58,15 @@ class DownloadPhoto extends Command
             case 'all':
                 $model->where(function ($query) {
                     $query->where('p.thumb_url', '')
-                        ->orWhere('p.download_img_original', '');
+                        ->orWhere('p.download_img_original', '')
+                        ->orWhere('p.img_url', 'p.img_original');
                 });
                 break;
             case 'original':
                 $model->where('p.download_img_original', '');
                 break;
             case 'normal':
-                $model->where('p.img_url', '');
+                $model->where('p.img_url', 'p.img_original');
                 break;
             case 'thumb':
                 $model->where('p.thumb_url', '');
@@ -139,7 +141,7 @@ class DownloadPhoto extends Command
     }
 
     /**
-     * 普通图（压缩到60KB以下）
+     * 普通图（压缩到80KB以下）
      * @param $photo array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
@@ -174,7 +176,7 @@ class DownloadPhoto extends Command
     }
 
     /**
-     * 缩略图（压缩到10KB以下）
+     * 缩略图（压缩到30KB以下）
      * @param $photo array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
@@ -204,6 +206,14 @@ class DownloadPhoto extends Command
             ->update([
                 'thumb_url' => $thumb_url
             ]);
+
+        if($photo['sort_order'] == 1){
+            Goods::query()
+                ->where('goods_id', $photo['goods_id'])
+                ->update([
+                    'goods_thumb' => $thumb_url
+                ]);
+        }
 
         return true;
     }
@@ -265,9 +275,9 @@ class DownloadPhoto extends Command
         $size = filesize($img);
 
         if($type == 1){
-            $max_size = 60;
+            $max_size = 80;
         }elseif ($type == 2){
-            $max_size = 10;
+            $max_size = 30;
         }else{
             return 1;
         }
