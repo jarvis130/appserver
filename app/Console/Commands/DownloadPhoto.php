@@ -63,6 +63,9 @@ class DownloadPhoto extends Command
             case 'original':
                 $model->where('p.download_img_original', '');
                 break;
+            case 'normal':
+                $model->where('p.img_url', '');
+                break;
             case 'thumb':
                 $model->where('p.thumb_url', '');
                 break;
@@ -94,11 +97,12 @@ class DownloadPhoto extends Command
     private static function all($photo, $root_dit, $sub_dir, $date)
     {
         self::original($photo, $root_dit, $sub_dir, $date);
+        self::normal($photo, $root_dit, $sub_dir, $date);
         self::thumb($photo, $root_dit, $sub_dir, $date);
     }
 
     /**
-     * 下载原图
+     * 原图（无压缩）
      * @param $photo array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
@@ -135,7 +139,42 @@ class DownloadPhoto extends Command
     }
 
     /**
-     * 下载缩略图
+     * 普通图（压缩到60KB以下）
+     * @param $photo array 图片信息
+     * @param $root_dit string 根目录
+     * @param $sub_dir string 子目录
+     * @param $date string 日期  格式：20200101
+     * @return bool
+     */
+    private static function normal($photo, $root_dit, $sub_dir, $date)
+    {
+        if($photo['thumb_url'] && $photo['img_url']){
+            return true;
+        }
+
+        $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $photo['goods_id'] . '/normal/';
+
+        $thumb_temp_fullname = self::make_thumb($photo['img_original'], $temp_dir);
+
+        if (!$thumb_temp_fullname)
+        {
+            return false;
+        }
+
+        /* 重新格式化图片名称 */
+        $thumb_url = EcshopImage::reformat_image_name('gallery_normal', $photo['goods_id'], $thumb_temp_fullname, 'normal', $root_dit, $sub_dir, $date);
+
+        GoodsGallery::query()
+            ->where('img_id', $photo['img_id'])
+            ->update([
+                'img_url' => $thumb_url
+            ]);
+
+        return true;
+    }
+
+    /**
+     * 缩略图（压缩到10KB以下）
      * @param $photo array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
@@ -150,7 +189,7 @@ class DownloadPhoto extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $photo['goods_id'] . '/thumb/';
 
-        $thumb_temp_fullname = self::make_thumb($photo['img_original'], $temp_dir);
+        $thumb_temp_fullname = self::make_thumb($photo['img_original'], $temp_dir, 2);
 
         if (!$thumb_temp_fullname)
         {
@@ -163,7 +202,6 @@ class DownloadPhoto extends Command
         GoodsGallery::query()
             ->where('img_id', $photo['img_id'])
             ->update([
-                'img_url' => $thumb_url,
                 'thumb_url' => $thumb_url
             ]);
 
@@ -174,9 +212,10 @@ class DownloadPhoto extends Command
      * 压缩
      * @param $img string 图片
      * @param $dir string 缩略图存放路径
+     * @param $type int 类型 1：普通图 2：缩略图
      * @return string
      */
-    private static function make_thumb($img, $dir)
+    private static function make_thumb($img, $dir, $type = 1)
     {
         // 判断是否本地图片
         if (!preg_match('/^http/', $img)  && !preg_match('/^https/', $img)) {
@@ -194,23 +233,7 @@ class DownloadPhoto extends Command
             $img = $dir . $thumb_filename;
         }
 
-        // 获取图片大小
-        $size = filesize($img);
-
-        // 计算压缩比例
-        if($size <= 30 * 1024) {  // 如果小于等于30K则不压缩
-            $percent = 1;
-        }elseif($size > 30 * 1024 && $size <= 100 * 1024) {  // 如果大于30K、小于等于100K则压缩至80%
-            $percent = 0.8;
-        }elseif($size > 100 * 1024 && $size <= 1000 * 1024) {  // 如果大于100K、小于等于1M则压缩至60%
-            $percent = 0.6;
-        }elseif($size > 1000 * 1024 && $size <= 2000 * 1024) {  // 如果大于1M、小于等于2M则压缩至40%
-            $percent = 0.4;
-        }elseif($size > 2000 * 1024 && $size <= 3000 * 1024) {  // 如果大于1M、小于等于3M则压缩至20%
-            $percent = 0.2;
-        }else{  // 如果大于3M则压缩至10%
-            $percent = 0.1;
-        }
+        $percent = self::get_thumb_percent($img, $type);
 
         if($percent == 1){
             $thumb = $img;
@@ -228,5 +251,42 @@ class DownloadPhoto extends Command
         }
 
         return $thumb;
+    }
+
+    /**
+     * 获取压缩比例
+     * @param $img string 图片
+     * @param $type int 类型 1：普通图 2：缩略图
+     * @return float
+     */
+    private static function get_thumb_percent($img, $type = 1)
+    {
+        // 获取图片大小
+        $size = filesize($img);
+
+        if($type == 1){
+            $max_size = 60;
+        }elseif ($type == 2){
+            $max_size = 10;
+        }else{
+            return 1;
+        }
+
+        // 计算压缩比例
+        if($size <= $max_size * 1024) {  // 如果小于等于$max_size（K）则不压缩
+            $percent = 1;
+        }elseif($size > $max_size * 1024 && $size <= 100 * 1024) {  // 如果大于$max_size（K）、小于等于100K则压缩至80%
+            $percent = 0.8;
+        }elseif($size > 100 * 1024 && $size <= 1000 * 1024) {  // 如果大于100K、小于等于1M则压缩至60%
+            $percent = 0.6;
+        }elseif($size > 1000 * 1024 && $size <= 2000 * 1024) {  // 如果大于1M、小于等于2M则压缩至40%
+            $percent = 0.4;
+        }elseif($size > 2000 * 1024 && $size <= 3000 * 1024) {  // 如果大于1M、小于等于3M则压缩至20%
+            $percent = 0.2;
+        }else{  // 如果大于3M则压缩至10%
+            $percent = 0.1;
+        }
+
+        return $percent;
     }
 }

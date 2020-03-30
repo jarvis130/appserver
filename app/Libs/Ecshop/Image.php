@@ -453,6 +453,10 @@ class Image
         {
             return false;
         }
+        if (!self::make_dir($full_dir.'/normal_img'))
+        {
+            return false;
+        }
         if (!self::make_dir($full_dir.'/thumb_img'))
         {
             return false;
@@ -468,6 +472,9 @@ class Image
             case 'gallery':
                 $img_name = $goods_id . '_P_' . $rand_name;
                 break;
+            case 'gallery_normal':
+                $img_name = $goods_id . '_normal_P_' . $rand_name;
+                break;
             case 'gallery_thumb':
                 $img_name = $goods_id . '_thumb_P_' . $rand_name;
                 break;
@@ -477,6 +484,13 @@ class Image
             if (self::move_image_file($source_img, $full_dir.'/source_img/'.$img_name.$img_ext))
             {
                 return $format_dir.'/source_img/'.$img_name.$img_ext;
+            }
+        }
+        elseif ($position == 'normal')
+        {
+            if (self::move_image_file($source_img, $full_dir.'/normal_img/'.$img_name.$img_ext))
+            {
+                return $format_dir.'/normal_img/'.$img_name.$img_ext;
             }
         }
         elseif ($position == 'thumb')
