@@ -148,7 +148,7 @@ class DownloadPhoto extends Command
      */
     private static function normal($photo, $root_dit, $sub_dir, $date)
     {
-        if($photo['thumb_url'] && $photo['img_url']){
+        if($photo['img_url']){
             return true;
         }
 
@@ -183,7 +183,7 @@ class DownloadPhoto extends Command
      */
     private static function thumb($photo, $root_dit, $sub_dir, $date)
     {
-        if($photo['thumb_url'] && $photo['img_url']){
+        if($photo['thumb_url']){
             return true;
         }
 
@@ -247,7 +247,7 @@ class DownloadPhoto extends Command
             }
 
             $img = $dir . $thumb_filename;
-            $thumb = self::make_thumb($img, $dir);
+            $thumb = self::make_thumb($img, $dir, $type);
         }
 
         return $thumb;
