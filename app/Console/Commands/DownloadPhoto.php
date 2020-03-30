@@ -216,13 +216,15 @@ class DownloadPhoto extends Command
             $thumb = $img;
         }else{
             $thumb_filename = EcshopImage::make_thumb($img, $percent, $dir);
-            $img = $dir . $thumb_filename;
-            $thumb = self::make_thumb($img, $dir);
 
             // 删除原图
-            if($thumb != $img){
-                @unlink($img);
+            @unlink($img);
+            if(!$thumb_filename){
+                return false;
             }
+
+            $img = $dir . $thumb_filename;
+            $thumb = self::make_thumb($img, $dir);
         }
 
         return $thumb;
