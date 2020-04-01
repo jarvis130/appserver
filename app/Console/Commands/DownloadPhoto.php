@@ -175,7 +175,7 @@ class DownloadPhoto extends Command
     }
 
     /**
-     * 缩略图（压缩到30KB以下）
+     * 缩略图（压缩到10KB以下）
      * @param $photo array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
@@ -276,7 +276,7 @@ class DownloadPhoto extends Command
         if($type == 1){
             $max_size = 80;
         }elseif ($type == 2){
-            $max_size = 30;
+            $max_size = 10;
         }else{
             return 1;
         }
