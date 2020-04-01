@@ -391,6 +391,10 @@ class Video extends BaseModel
             }
         }
 
+        if (isset($add_time) && $add_time) {
+            $model->where(DB::raw("from_unixtime(".$prefix."goods.add_time, '%Y-%m-%d')"), $add_time);
+        }
+
         if (isset($pub_id) && $pub_id) {
             $model->where('pub_id', $pub_id);
         }

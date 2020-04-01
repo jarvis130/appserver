@@ -53,10 +53,11 @@ class VideoController extends Controller
             'keyword'         => 'string|min:1',
             'sort_key'        => 'string|min:1',
             'sort_value'      => 'required_with:sort_key|string|min:1',
-            'attr_value1'        => 'string|min:1',
-            'attr_value2'        => 'string|min:1',
-            'pub_id'        => 'integer|min:0',
-            'is_real'        => 'string|min:1',
+            'attr_value1'     => 'string|min:1',
+            'attr_value2'     => 'string|min:1',
+            'pub_id'          => 'integer|min:0',
+            'is_real'         => 'string|min:1',
+            'add_time'        => 'string|min:0',
         ];
 
         if ($error = $this->validateInput($rules)) {
