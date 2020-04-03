@@ -83,7 +83,7 @@ if (! function_exists('formatPhoto')) {
              $thumb = $img;
          }
         
-         $domain = $domain == null ?  config('app.shop_url') : $domain ;
+         $domain = $domain == null ?  config('app.file_resource_url') : $domain ;
 
          if (!preg_match('/^http/', $thumb)  &&!preg_match('/^https/', $thumb)) {
              $thumb =  $domain.'/'.$thumb ;
