@@ -260,7 +260,7 @@ class Video extends BaseModel
 
     public function getDefaultPhotoAttribute()
     {
-        return formatPhoto($this->goods_img);
+        return formatPhoto($this->goods_thumb);
     }
 
     public function getReviewrateAttribute()
