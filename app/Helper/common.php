@@ -83,7 +83,7 @@ if (! function_exists('formatPhoto')) {
              $thumb = $img;
          }
         
-         $domain = $domain == null ?  config('app.file_resource_url') : $domain ;
+         $domain = $domain == null ?  config('app.shop_url') : $domain ;
 
          if (!preg_match('/^http/', $thumb)  &&!preg_match('/^https/', $thumb)) {
              $thumb =  $domain.'/'.$thumb ;
@@ -103,6 +103,44 @@ if (! function_exists('formatPhoto')) {
             'large'  => $img
         ];
      }
+}
+
+if (! function_exists('formatPhoto2')) {
+    /**
+     * Format Photo
+     *
+     * @param  string $photo
+     * @return array
+     */
+    function formatPhoto2($img, $thumb = null, $domain = null)
+    {
+        if ($img == null) {
+            return null;
+        }
+        if ($thumb == null) {
+            $thumb = $img;
+        }
+
+        $domain = $domain == null ?  config('app.file_resource_url') : $domain ;
+
+        if (!preg_match('/^http/', $thumb)  &&!preg_match('/^https/', $thumb)) {
+            $thumb =  $domain.'/'.$thumb ;
+        }
+
+
+        if (!preg_match('/^http/', $img)  &&!preg_match('/^https/', $img)) {
+            $img =  $domain.'/'.$img ;
+        }
+
+        return [
+            'width'  => null,
+            'height' => null,
+
+            //定义图片服务器
+            'thumb'  => $thumb,
+            'large'  => $img
+        ];
+    }
 }
 
 if (! function_exists('curl_request')) {
