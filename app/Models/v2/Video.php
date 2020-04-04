@@ -136,7 +136,15 @@ class Video extends BaseModel
 
     public function getVideourlAttribute()
     {
-        return $this->video_url;
+        $video_url = $this->video_url;
+        if($video_url == null) {
+            return '';
+        }else{
+            if (!preg_match('/^http/', $video_url)  &&!preg_match('/^https/', $video_url)) {
+                $video_url = config('app.video_resource_url').'/'.$video_url;
+            }
+            return $video_url;
+        }
     }
 
     public function getGoodsbriefAttribute()

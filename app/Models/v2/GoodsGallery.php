@@ -76,7 +76,7 @@ class GoodsGallery extends BaseModel
             return '';
         }else{
             if (!preg_match('/^http/', $img)  &&!preg_match('/^https/', $img)) {
-                $img = config('app.file_resource_url').'/'.$img ;
+                $img = config('app.photo_resource_url').'/'.$img ;
             }
             return $img;
         }
