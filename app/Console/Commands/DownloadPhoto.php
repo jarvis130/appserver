@@ -4,7 +4,6 @@ namespace App\Console\Commands;
 
 use App\Libs\Ecshop\Image AS EcshopImage;
 use App\Libs\ImageUtils;
-use App\Models\BaseModel;
 use App\Models\v2\Goods;
 use App\Models\v2\GoodsGallery;
 use Illuminate\Console\Command;
@@ -52,7 +51,7 @@ class DownloadPhoto extends Command
 
         $limit = 1000;
 
-        $model = BaseModel::query()->from('goods as g')
+        $model = GoodsGallery::query()->from('goods as g')
             ->leftjoin('goods_gallery as p', 'p.goods_id','=','g.goods_id')
             ->where('g.is_real', 3);
         switch ($scope){
