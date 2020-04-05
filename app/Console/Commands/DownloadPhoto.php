@@ -95,6 +95,7 @@ class DownloadPhoto extends Command
      * @param $photo array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
+     * @param $date string 日期  格式：20200101
      */
     private static function all($photo, $root_dit, $sub_dir, $date)
     {

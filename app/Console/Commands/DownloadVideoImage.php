@@ -88,6 +88,7 @@ class DownloadVideoImage extends Command
      * @param $image array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
+     * @param $date string 日期  格式：20200101
      */
     private static function all($image, $root_dit, $sub_dir, $date)
     {
@@ -111,7 +112,7 @@ class DownloadVideoImage extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $image['goods_id'] . '/source/';
 
-        $original_temp_filename = EcshopImage::download_image($image['img_original'], $temp_dir);
+        $original_temp_filename = EcshopImage::download_image($image['goods_img'], $temp_dir);
 
         if (!$original_temp_filename)
         {
@@ -148,7 +149,7 @@ class DownloadVideoImage extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $image['goods_id'] . '/thumb/';
 
-        $thumb_temp_fullname = ImageUtils::make_thumb($image['img_original'], $temp_dir, 5);
+        $thumb_temp_fullname = ImageUtils::make_thumb($image['goods_img'], $temp_dir, 5);
 
         if (!$thumb_temp_fullname)
         {
