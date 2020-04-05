@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         'App\Console\Commands\ActivateLicense',
         'App\Console\Commands\DownloadPhoto',
+        'App\Console\Commands\DownloadVideoImage',
     ];
 
     /**
