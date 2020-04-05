@@ -47,7 +47,7 @@ class DownloadVideoImage extends Command
     {
         $scope = $this->option('scope') ? $this->option('scope') : 'all';
         $root_dit = $this->option('rootDit') ? $this->option('rootDit') : dirname(base_path()) . '/ecshop';
-        $sub_dir = $this->option('subDir') ? $this->option('subDir') : 'data/video/images';
+        $sub_dir = $this->option('subDir') ? $this->option('subDir') : 'data/images/video';
 
         $limit = 1000;
 
@@ -142,7 +142,7 @@ class DownloadVideoImage extends Command
     }
 
     /**
-     * 缩略图（压缩到5KB以下）
+     * 缩略图（压缩到8KB以下）
      * @param $image array 图片信息
      * @param $root_dit string 根目录
      * @param $sub_dir string 子目录
@@ -164,7 +164,7 @@ class DownloadVideoImage extends Command
             $goods_img = config('app.video_resource_url') . '/' . $goods_img;
         }
 
-        $thumb_temp_fullname = ImageUtils::make_thumb($goods_img, $temp_dir, 5);
+        $thumb_temp_fullname = ImageUtils::make_thumb($goods_img, $temp_dir, 8);
 
         if (!$thumb_temp_fullname)
         {
