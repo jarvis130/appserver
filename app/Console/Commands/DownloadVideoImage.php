@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Libs\Ecshop\Image AS EcshopImage;
 use App\Libs\ImageUtils;
+use App\Models\BaseModel;
 use App\Models\v2\Goods;
 use Illuminate\Console\Command;
 
@@ -50,27 +51,27 @@ class DownloadVideoImage extends Command
 
         $limit = 1000;
 
-        $model = Goods::query()->where('is_real', 2);
+        $model = BaseModel::query()->from('goods as g')->where('g.is_real', 2);
         switch ($scope){
             case 'all':
                 $model->where(function ($query) {
-                    $query->where('goods_thumb', '')
-                        ->orWhere('original_img', '');
+                    $query->where('g.goods_thumb', '')
+                        ->orWhere('g.original_img', '');
                 });
                 break;
             case 'original':
-                $model->where('original_img', '');
+                $model->where('g.original_img', '');
                 break;
             case 'thumb':
-                $model->where('goods_thumb', '');
+                $model->where('g.goods_thumb', '');
                 break;
             default:
                 exit('无效范围');
         }
 
-        $model->orderBy('add_time', 'DESC');
+        $model->orderBy('g.add_time', 'DESC');
 
-        while ($images = $model->limit($limit)->get(['goods_id', 'goods_img', 'goods_thumb', 'original_img', 'add_time'])->toArray())
+        while ($images = $model->limit($limit)->get(['g.goods_id', 'g.goods_img', 'g.goods_thumb', 'g.original_img', 'g.add_time'])->toArray())
         {
             foreach ($images as $image){
                 $date = date('Ymd', $image['add_time']);
