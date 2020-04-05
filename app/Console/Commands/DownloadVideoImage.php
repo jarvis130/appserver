@@ -112,7 +112,14 @@ class DownloadVideoImage extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $image['goods_id'] . '/source/';
 
-        $original_temp_filename = EcshopImage::download_image($image['goods_img'], $temp_dir);
+        $goods_img = $image['goods_img'];
+        // 判断是否本地图片
+        if (!preg_match('/^http/', $goods_img)  && !preg_match('/^https/', $goods_img)) {
+            // 拼接完整URL
+            $goods_img = config('app.video_resource_url') . '/' . $goods_img;
+        }
+
+        $original_temp_filename = EcshopImage::download_image($goods_img, $temp_dir);
 
         if (!$original_temp_filename)
         {
@@ -149,7 +156,14 @@ class DownloadVideoImage extends Command
 
         $temp_dir = $root_dit . '/' . $sub_dir . '/temp/' . $date . '/' . $image['goods_id'] . '/thumb/';
 
-        $thumb_temp_fullname = ImageUtils::make_thumb($image['goods_img'], $temp_dir, 5);
+        $goods_img = $image['goods_img'];
+        // 判断是否本地图片
+        if (!preg_match('/^http/', $goods_img)  && !preg_match('/^https/', $goods_img)) {
+            // 拼接完整URL
+            $goods_img = config('app.video_resource_url') . '/' . $goods_img;
+        }
+
+        $thumb_temp_fullname = ImageUtils::make_thumb($goods_img, $temp_dir, 5);
 
         if (!$thumb_temp_fullname)
         {
