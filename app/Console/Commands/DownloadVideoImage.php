@@ -46,7 +46,7 @@ class DownloadVideoImage extends Command
     {
         $scope = $this->option('scope') ? $this->option('scope') : 'all';
         $root_dit = $this->option('rootDit') ? $this->option('rootDit') : dirname(base_path()) . '/ecshop';
-        $sub_dir = $this->option('subDir') ? $this->option('subDir') : 'data/video/image';
+        $sub_dir = $this->option('subDir') ? $this->option('subDir') : 'data/video/images';
 
         $limit = 1000;
 
