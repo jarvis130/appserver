@@ -286,26 +286,31 @@ class Video extends BaseModel
 
     public function getBreadcrumbAttribute()
     {
-        $extend = GoodsExtendCategory::where('goods_id', $this->goods_id)->first()->toArray();
-        if($extend){
-            $extend_cat = Category::where('cat_id', $extend['cat_id'])->first()->toArray();
+        if(!empty($this->is_real) && $this->is_real == 2){
+            $extend = GoodsExtendCategory::where('goods_id', $this->goods_id)->first()->toArray();
+            if($extend){
+                $extend_cat = Category::where('cat_id', $extend['cat_id'])->first()->toArray();
+            }
+
+            $cat = Category::where('cat_id', $this->cat_id)->first()->toArray();
+
+            $v1 = '';
+            $v2 = '';
+
+            if(!empty($extend_cat)){
+                $v1 = $extend_cat['cat_name'];
+            }
+
+            if(!empty($cat)){
+                $v2 = $cat['cat_name'];
+            }
+
+            $breadcrumb = $v1 . '/' . $v2;
+            $breadcrumb = trim($breadcrumb, '/');
+        }else{
+            $breadcrumb = '';
         }
 
-        $cat = Category::where('cat_id', $this->cat_id)->first()->toArray();
-
-        $v1 = '';
-        $v2 = '';
-
-        if(!empty($extend_cat)){
-            $v1 = $extend_cat['cat_name'];
-        }
-
-        if(!empty($cat)){
-            $v2 = $cat['cat_name'];
-        }
-
-        $breadcrumb = $v1 . '/' . $v2;
-        $breadcrumb = trim($breadcrumb, '/');
         return $breadcrumb;
     }
 
