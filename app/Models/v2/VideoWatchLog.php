@@ -38,7 +38,7 @@ class VideoWatchLog extends BaseModel
         foreach ($data['data'] as $key => $value) {
             $goods[$key]['goods'] = $data['data'][$key]['goods'];
             $goods[$key]['add_time'] = date('Y-m-d', $data['data'][$key]['add_time']);
-            $goods[$key]['breadcrumb'] = $data['data'][$key]['breadcrumb'];
+            $goods[$key]['breadcrumb'] = $data['data'][$key]['breadcrumb'];  // TODO 此信息已经废弃（为兼容旧版客户端，暂时保留），现在从goods属性获取
         }
 
         return self::formatBody(['products' => $goods, 'paged' => self::formatPaged($page, $per_page, $total)]);
