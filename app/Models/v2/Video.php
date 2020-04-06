@@ -286,12 +286,12 @@ class Video extends BaseModel
 
     public function getBreadcrumbAttribute()
     {
-        $extend = GoodsExtendCategory::where('goods_id', $this->goods_id)->first();
+        $extend = GoodsExtendCategory::where('goods_id', $this->goods_id)->first()->toArray();
         if($extend){
-            $extend_cat = Category::where('cat_id', $extend['cat_id'])->first();
+            $extend_cat = Category::where('cat_id', $extend['cat_id'])->first()->toArray();
         }
 
-        $cat = Category::where('cat_id', $this->cat_id)->first();
+        $cat = Category::where('cat_id', $this->cat_id)->first()->toArray();
 
         $v1 = '';
         $v2 = '';
