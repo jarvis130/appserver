@@ -14,7 +14,7 @@ class BannerController extends Controller
     */
     public function index(Request $request)
     {
-        $model = Banner::getList(1);
+        $model = Banner::getCarouselList();
 
         return $this->json($model);
     }

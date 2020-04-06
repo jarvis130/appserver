@@ -14,21 +14,7 @@ class BannerAdsController extends Controller
     */
     public function index(Request $request)
     {
-        $rules = [
-            'scene' => 'integer|min:1'
-        ];
-
-        if ($error = $this->validateInput($rules)) {
-            return $error;
-        }
-
-        extract($this->validated);
-
-        if(empty($scene)){
-            $scene = 2;
-        }
-
-        $model = Banner::getList($scene);
+        $model = Banner::getAdsList();
 
         return $this->json($model);
     }

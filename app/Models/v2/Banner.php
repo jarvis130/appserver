@@ -10,41 +10,69 @@ class Banner extends BaseModel
     protected $table      = 'banners';
     public $timestamps = false;
     protected $guarded    = [];
-    protected $appends    = ['id', 'photo', 'link', 'title', 'type'];
-    protected $visible    = ['id', 'photo', 'link', 'title', 'type'];
+    protected $appends    = ['id', 'scene', 'photo', 'link', 'title', 'type'];
+    protected $visible    = ['id', 'scene', 'photo', 'link', 'title', 'type'];
 
     /**
-     * 获取列表
-     * @param $scene int 场景值 1：首页轮播图 2：首页广告位 3：播放页广告位
+     * 获取轮播图列表
      * @return array
      */
-    public static function getList($scene)
+    public static function getCarouselList()
     {
-        $model = self::where('scene', $scene)->orderBy('sort');
+        $model = self::where('scene', 1)->orderBy('sort');
 
-        if($scene == 2){
-            $data = array();
-            $banners = $model->get()->groupBy('group')->toArray();
-            ksort($banners);
-            $i = 0;
-            foreach ($banners as $banner){
-                $i += 1;
-                $data['ad' . $i] = $banner;
-            }
-            return self::formatBody($data);
-        }elseif($scene == 3){
-            $data = $model->first()->toArray();
-            return self::formatBody(['video_ad' => $data]);
-        }else{
-            $data = $model->get()->toArray();
-            return self::formatBody(['banners' => $data]);
+        $data = $model->get()->toArray();
+        return self::formatBody(['banners' => $data]);
+    }
+
+    /**
+     * 获取广告位列表
+     * @return array
+     */
+    public static function getAdsList()
+    {
+        $homeAdScene = 2;  // 首页广告位场景值
+        $detailAdScene = 3;  // 详情页广告位场景值
+
+        $model = self::whereIn('scene', [$homeAdScene, $detailAdScene])->orderBy('sort');
+
+        $data = array(
+            'home_ad1' => [],
+            'home_ad2' => [],
+            'home_ad3' => [],
+            'detail_ad1' => [],
+        );
+        $banners = $model->get()->groupBy('scene', 'group')->toArray();
+
+        $homeAds = $banners[$homeAdScene];
+        $detailAds = $banners[$detailAdScene];
+
+        ksort($homeAds);
+        ksort($detailAds);
+
+        $hi = 0;
+        foreach ($homeAds as $homeAd){
+            $hi += 1;
+            $data['home_ad' . $hi] = $homeAd;
         }
 
+        $di = 0;
+        foreach ($detailAds as $detailAd){
+            $di += 1;
+            $data['detail_ad' . $di] = $detailAd;
+        }
+
+        return self::formatBody($data);
     }
 
     public function getIdAttribute()
     {
         return $this->attributes['id'];
+    }
+
+    public function getSceneAttribute()
+    {
+        return $this->attributes['scene'];
     }
 
     public function getPhotoAttribute()
