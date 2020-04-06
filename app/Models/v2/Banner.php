@@ -15,7 +15,7 @@ class Banner extends BaseModel
 
     /**
      * 获取列表
-     * @param $scene int 场景值 1：轮播图 2：广告位
+     * @param $scene int 场景值 1：首页轮播图 2：首页广告位 3：播放页广告位
      * @return array
      */
     public static function getList($scene)
@@ -32,6 +32,9 @@ class Banner extends BaseModel
                 $data['ad' . $i] = $banner;
             }
             return self::formatBody($data);
+        }elseif($scene == 3){
+            $data = $model->first()->toArray();
+            return self::formatBody(['video_ad' => $data]);
         }else{
             $data = $model->get()->toArray();
             return self::formatBody(['banners' => $data]);
