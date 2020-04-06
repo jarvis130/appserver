@@ -10,8 +10,8 @@ class Banner extends BaseModel
     protected $table      = 'banners';
     public $timestamps = false;
     protected $guarded    = [];
-    protected $appends    = ['id', 'scene', 'photo', 'link', 'title', 'type'];
-    protected $visible    = ['id', 'scene', 'photo', 'link', 'title', 'type'];
+    protected $appends    = ['id', 'photo', 'link', 'title', 'type'];
+    protected $visible    = ['id', 'photo', 'link', 'title', 'type'];
 
     /**
      * 获取轮播图列表
@@ -29,37 +29,32 @@ class Banner extends BaseModel
      * 获取广告位列表
      * @return array
      */
-    public static function getAdsList()
+    public static function getAdsList(array $attributes)
     {
-        $homeAdScene = 2;  // 首页广告位场景值
-        $detailAdScene = 3;  // 详情页广告位场景值
+        extract($attributes);
 
-        $model = self::whereIn('scene', [$homeAdScene, $detailAdScene])->orderBy('sort');
-
-        $data = array(
-            'home_ad1' => [],
-            'home_ad2' => [],
-            'home_ad3' => [],
-            'detail_ad1' => [],
-        );
-        $banners = $model->get()->groupBy('scene', 'group')->toArray();
-
-        $homeAds = $banners[$homeAdScene];
-        $detailAds = $banners[$detailAdScene];
-
-        ksort($homeAds);
-        ksort($detailAds);
-
-        $hi = 0;
-        foreach ($homeAds as $homeAd){
-            $hi += 1;
-            $data['home_ad' . $hi] = $homeAd;
+        if(empty($type) || $type == 1){  // 首页广告位
+            $scene = 2;
+            $data_key = 'home_ad';
+        }else{  // 详情页广告位
+            $scene = 3;
+            $data_key = 'detail_ad';
         }
 
-        $di = 0;
-        foreach ($detailAds as $detailAd){
-            $di += 1;
-            $data['detail_ad' . $di] = $detailAd;
+        $model = self::where('scene', $scene)->orderBy('sort');
+
+        $data = array(
+            $data_key . '1' => [],
+            $data_key . '2' => [],
+            $data_key . '3' => []
+        );
+        $banners = $model->get()->groupBy('group')->toArray();
+        ksort($banners);
+
+        $i = 0;
+        foreach ($banners as $banner){
+            $i += 1;
+            $data[$data_key . $i] = $banner;
         }
 
         return self::formatBody($data);
@@ -68,11 +63,6 @@ class Banner extends BaseModel
     public function getIdAttribute()
     {
         return $this->attributes['id'];
-    }
-
-    public function getSceneAttribute()
-    {
-        return $this->attributes['scene'];
     }
 
     public function getPhotoAttribute()
