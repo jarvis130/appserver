@@ -284,6 +284,31 @@ class Video extends BaseModel
         return url('/v2/product.intro.' . $this->goods_id);
     }
 
+    public function getBreadcrumbAttribute()
+    {
+        $extend = GoodsExtendCategory::where('goods_id', $this->goods_id)->first();
+        if($extend){
+            $extend_cat = Category::where('cat_id', $extend['cat_id'])->first();
+        }
+
+        $cat = Category::where('cat_id', $this->cat_id)->first();
+
+        $v1 = '';
+        $v2 = '';
+
+        if(!empty($extend_cat)){
+            $v1 = $extend_cat['cat_name'];
+        }
+
+        if(!empty($cat)){
+            $v2 = $cat['cat_name'];
+        }
+
+        $breadcrumb = $v1 . '/' . $v2;
+        $breadcrumb = trim($breadcrumb, '/');
+        return $breadcrumb;
+    }
+
     public function getCreatedatAttribute()
     {
         return date("Y-m-d H:i:s", $this->add_time);
@@ -733,17 +758,6 @@ class Video extends BaseModel
                     ->groupby('video_id')
                     ->count();
                 $product_data['play_total'] = $total;
-                //属性Breadcrumb
-                $v1='';$v2='';
-                $attrResult = GoodsVideoAttr::where('goods_id', $product)->first();
-                if($attrResult){
-                    $v1 = $attrResult['attr_value1'];
-                    $v2 = $attrResult['attr_value2'];
-                    $product_data['breadcrumb'] = $v1.' / '.$v2;
-                }else{
-                    $product_data['breadcrumb'] = '';
-                }
-
             }
 
             if (!$data) {
@@ -1404,20 +1418,10 @@ class Video extends BaseModel
 
         //因为有网站和手机 所以可能$num大于1
         if ($num == 0) {
-            //属性Breadcrumb
-            $v1='';$v2='';
-
-            $attrResult = GoodsVideoAttr::where('goods_id', $video_id)->first();
-            if($attrResult){
-                $v1 = $attrResult['attr_value1'];
-                $v2 = $attrResult['attr_value2'];
-            }
-
             $model = new VideoWatchLog;
             $model->user_id             = $uid;
             $model->video_id            = $video_id;
             $model->add_time            = time();
-            $model->breadcrumb = $v1.' / '.$v2;
 
             if (!$model->save()) {
                 return self::formatError(self::UNKNOWN_ERROR);
