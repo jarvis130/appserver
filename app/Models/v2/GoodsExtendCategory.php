@@ -28,7 +28,11 @@ class GoodsExtendCategory extends BaseModel
 
     public function getCatIdAttribute()
     {
-        return $this->cat_id;
+        if(!empty($this->cat_id)){
+            return $this->cat_id;
+        }else{
+            return 0;
+        }
     }
 
 
