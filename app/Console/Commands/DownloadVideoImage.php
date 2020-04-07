@@ -71,8 +71,10 @@ class DownloadVideoImage extends Command
 
         $model->orderBy('g.add_time', 'DESC');
 
+        $i = 0;  //计数
         while ($images = $model->limit($limit)->get(['g.goods_id', 'g.goods_img', 'g.goods_thumb', 'g.original_img', 'g.add_time'])->toArray())
         {
+            echo "处理批次: " . ++$i;
             foreach ($images as $image){
                 $date = date('Ymd', $image['add_time']);
                 self::$scope($image, $root_dit, $sub_dir, $date);
@@ -124,6 +126,7 @@ class DownloadVideoImage extends Command
 
         if (!$original_temp_filename)
         {
+            echo "原图下载失败: goods_id: " . $image['goods_id'] . "----原始图片: " . $goods_img;
             return false;
         }
 
@@ -168,6 +171,7 @@ class DownloadVideoImage extends Command
 
         if (!$thumb_temp_fullname)
         {
+            echo "缩略图下载失败: goods_id: " . $image['goods_id'] . "----原始图片: " . $goods_img;
             return false;
         }
 

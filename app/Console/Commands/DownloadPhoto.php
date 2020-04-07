@@ -77,8 +77,10 @@ class DownloadPhoto extends Command
 
         $model->orderBy('g.add_time', 'DESC');
 
+        $i = 0;  //计数
         while ($photos = $model->limit($limit)->get(['p.*', 'g.add_time'])->toArray())
         {
+            echo "处理批次: " . ++$i;
             foreach ($photos as $photo){
                 $date = date('Ymd', $photo['add_time']);
                 self::$scope($photo, $root_dit, $sub_dir, $date);
@@ -124,6 +126,7 @@ class DownloadPhoto extends Command
 
         if (!$original_temp_filename)
         {
+            echo "原图下载失败: goods_id: " . $photo['goods_id'] . "----原始图片: " . $photo['img_original'];
             return false;
         }
 
@@ -161,6 +164,7 @@ class DownloadPhoto extends Command
 
         if (!$thumb_temp_fullname)
         {
+            echo "普通图处理失败: goods_id: " . $photo['goods_id'] . "----原始图片: " . $photo['img_original'];
             return false;
         }
 
@@ -196,6 +200,7 @@ class DownloadPhoto extends Command
 
         if (!$thumb_temp_fullname)
         {
+            echo "缩略图处理失败: goods_id: " . $photo['goods_id'] . "----原始图片: " . $photo['img_original'];
             return false;
         }
 
