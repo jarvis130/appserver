@@ -256,14 +256,9 @@ class Member extends BaseModel
             if($userRank < 2){
                 //当天观看次数
                 $watchedTimes = Video::getTodayWatchedTimes($uid);
-                //可观看次数
-                $watchTimes = $user['credit_line'];
-            }else{
-                //可观看次数
-                $watchTimes = -1; // -1表示无限次
             }
 
-            $user['watch_times'] = $watchTimes;
+            $user['watch_times'] = $user['credit_line'];
             $user['watched_times'] = $watchedTimes;
             return self::formatBody(['user' => $user]);
         } else {
@@ -496,7 +491,12 @@ class Member extends BaseModel
             return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.bind'));
         }
         
-        $data = ['user_name' => $mobile, 'mobile_phone' => $mobile, 'user_rank' => 1, 'credit_line' => DB::raw('credit_line + 3')];
+        $data = ['user_name' => $mobile, 'mobile_phone' => $mobile, 'user_rank' => 1];
+
+        if(empty($member->mobile_phone)){
+            $data['credit_line'] = DB::raw('credit_line + 3');
+        }
+
         if (isset($password)) {
             $data['password'] = self::setPassword($password);
         }
@@ -1027,7 +1027,11 @@ class Member extends BaseModel
 
     public function getCreditLineAttribute()
     {
-        return intval($this->attributes['credit_line']);
+        if($this->attributes['user_rank'] >= 2 && $this->attributes['vip_end_time'] >= time()){
+            return -1;  // 无限次数
+        }else{
+            return intval($this->attributes['credit_line']);
+        }
     }
 
     public function getVipEndTimeAttribute()
@@ -1217,14 +1221,9 @@ class Member extends BaseModel
         if($userRank < 2){
             //当天观看次数
             $watchedTimes = Video::getTodayWatchedTimes($userId);
-            //可观看次数
-            $watchTimes = $info['credit_line'];
-        }else{
-            //可观看次数
-            $watchTimes = -1; // -1表示无限次
         }
 
-        $info['watch_times'] = $watchTimes;
+        $info['watch_times'] = $info['credit_line'];
         $info['watched_times'] = $watchedTimes;
         //
         $token = Token::encode(['uid' => $model->user_id]);
