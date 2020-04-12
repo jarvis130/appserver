@@ -62,18 +62,7 @@ class VideoWatchLog extends BaseModel
             return self::formatBody(['times' => 1]);
         }
 
-        // 如果VIP已到期，则将userRank设置为1
-        if($userRank >= 2 && $vip_end_time < time()){
-            $userRank = 1;
-        }
-
-        if($userRank == 0){
-            $times = 5;
-        }elseif($userRank == 1){
-            $times = 10;
-        }else{
-            $times = 99;
-        }
+        $times = $user['credit_line'];
 
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2) {

@@ -39,8 +39,8 @@ class Member extends BaseModel
     public $timestamps = false;
 
     protected $guarded = [];
-    protected $appends = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time'];
-    protected $visible = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time'];
+    protected $appends = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time', 'credit_line'];
+    protected $visible = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time', 'credit_line'];
 
     public static function login(array $attributes)
     {
@@ -252,14 +252,13 @@ class Member extends BaseModel
             if($userRank < 2){
                 //当天观看次数
                 $watchedTimes = Video::getTodayWatchedTimes($uid);
-            }
-            if($userRank == 0){
-                $watchTimes = 5;
-            }elseif($userRank == 1){
-                $watchTimes = 10;
+                //可观看次数
+                $watchTimes = $user['credit_line'];
             }else{
+                //可观看次数
                 $watchTimes = -1; // -1表示无限次
             }
+
             $user['watch_times'] = $watchTimes;
             $user['watched_times'] = $watchedTimes;
             return self::formatBody(['user' => $user]);
@@ -493,7 +492,7 @@ class Member extends BaseModel
             return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.bind'));
         }
         
-        $data = ['user_name' => $mobile, 'user_rank' => 1];
+        $data = ['user_name' => $mobile, 'user_rank' => 1, 'credit_line' => DB::raw('credit_line + 3')];
         if (isset($password)) {
             $data['password'] = self::setPassword($password);
         }
@@ -1022,6 +1021,11 @@ class Member extends BaseModel
         return $this->attributes['sex'];
     }
 
+    public function getCreditLineAttribute()
+    {
+        return intval($this->attributes['credit_line']);
+    }
+
     public function getVipEndTimeAttribute()
     {
         if($this->attributes['vip_end_time'] >= time()){
@@ -1118,6 +1122,16 @@ class Member extends BaseModel
             $email = $username.'@qq.com';
             $regtime = time();
             $password = $regtime;
+
+            $credit_line = 5; // 媒体观看次数
+            // 根据IP地址判断该用户是否有上级
+            if(!empty($ip)){
+                $download = Download::where(['ip'=>$ip, 'status' => '0'])->first();
+                if(!empty($download)){
+                    $credit_line = 6;
+                }
+            }
+
             $data = [
                 'user_name' => $username,
                 'email' => $email,
@@ -1129,6 +1143,7 @@ class Member extends BaseModel
                 'alias' => $username,
                 'mobile_phone' => '',
                 'rank_points' => 0,
+                'credit_line' => $credit_line,
                 'vip_end_time' => 0
             ];
 
@@ -1139,10 +1154,8 @@ class Member extends BaseModel
                     return self::formatError(self::UNKNOWN_ERROR);
                 }
                 // 根据IP地址判断该用户是否有上级
-                $ip = '';
-                $downloadModel = Download::where(['ip'=>$ip, 'status' => '0']);
-                if($downloadModel->count() > 0){
-                    $parenId = $downloadModel->user_id;
+                if(!empty($download)){
+                    $parenId = $download->user_id;
                     if($userId != $parenId){
                         $relationNum = UserRelation::where(['user_id' =>$userId, 'parent_id'=>$parenId])->count();
                         if($relationNum == 0){
@@ -1156,7 +1169,19 @@ class Member extends BaseModel
                                 return self::formatError(self::UNKNOWN_ERROR);
                             }
                             //更新状态
-                            Download::where('id', $downloadModel->id)->update(['status'=>1]);
+                            Download::where('id', $download->id)->update(['status'=>1]);
+
+                            /*更新上级每日观看次数/VIP时长*/
+                            //更新观看次数
+                            self::where('user_id', $parenId)->update(['credit_line' => DB::raw('credit_line + 1')]);
+                            //更新VIP时长
+                            //获取下级数量
+                            $childCount = UserRelation::where('parent_id', $parenId)->count();
+                            if($childCount % 5 == 0){
+                                $vip_add_day = 1;
+                                $vip_add_time = $vip_add_day * 24 * 60 * 60;
+                                self::updateVipTime($parenId, $vip_add_time);
+                            }
                         }
                     }else{
                         // 删除分享者自己打开自己分享链接产生的数据
@@ -1184,14 +1209,13 @@ class Member extends BaseModel
         if($userRank < 2){
             //当天观看次数
             $watchedTimes = Video::getTodayWatchedTimes($userId);
-        }
-        if($userRank == 0){
-            $watchTimes = 5;
-        }elseif($userRank == 1){
-            $watchTimes = 10;
+            //可观看次数
+            $watchTimes = $info['credit_line'];
         }else{
+            //可观看次数
             $watchTimes = -1; // -1表示无限次
         }
+
         $info['watch_times'] = $watchTimes;
         $info['watched_times'] = $watchedTimes;
         //
