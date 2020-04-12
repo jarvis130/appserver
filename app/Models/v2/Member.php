@@ -1202,9 +1202,13 @@ class Member extends BaseModel
         $userRank = $info['rank']['id'];
         $vip_end_time = $info['original_vip_end_time'];
 
-        // 如果VIP已到期，则将userRank设置为1
+        // 如果VIP已到期，则将userRank降级
         if($userRank >= 2 && $vip_end_time < time()){
-            $userRank = 1;
+            if(empty($user['mobile'])){
+                $userRank = 0;
+            }else{
+                $userRank = 1;
+            }
             self::where('user_id', $userId)->update(['user_rank' => $userRank]);
             $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
         }
