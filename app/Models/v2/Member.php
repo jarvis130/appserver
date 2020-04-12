@@ -496,7 +496,7 @@ class Member extends BaseModel
             return self::formatError(self::BAD_REQUEST, trans('message.member.mobile.bind'));
         }
         
-        $data = ['user_name' => $mobile, 'user_rank' => 1, 'credit_line' => DB::raw('credit_line + 3')];
+        $data = ['user_name' => $mobile, 'mobile_phone' => $mobile, 'user_rank' => 1, 'credit_line' => DB::raw('credit_line + 3')];
         if (isset($password)) {
             $data['password'] = self::setPassword($password);
         }
