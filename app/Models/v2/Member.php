@@ -1154,7 +1154,7 @@ class Member extends BaseModel
                     return self::formatError(self::UNKNOWN_ERROR);
                 }
                 // 根据IP地址判断该用户是否有上级
-                if(!empty($download)){
+                if(isset($download)){
                     $parenId = $download->user_id;
                     if($userId != $parenId){
                         $relationNum = UserRelation::where(['user_id' =>$userId, 'parent_id'=>$parenId])->count();
