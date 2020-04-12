@@ -1165,7 +1165,7 @@ class Member extends BaseModel
                                 'create_time'=>time()
                             );
 
-                            if (UserRelation::create($data)) {
+                            if (!UserRelation::create($data)) {
                                 return self::formatError(self::UNKNOWN_ERROR);
                             }
                             //更新状态
