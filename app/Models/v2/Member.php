@@ -39,8 +39,8 @@ class Member extends BaseModel
     public $timestamps = false;
 
     protected $guarded = [];
-    protected $appends = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time', 'credit_line'];
-    protected $visible = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time', 'credit_line'];
+    protected $appends = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time', 'watch_times'];
+    protected $visible = ['id','age','rank','gender','username','nickname','mobile','avatar','mobile_binded', 'joined_at','is_auth', 'is_completed', 'vip_end_time', 'original_vip_end_time', 'watch_times'];
 
     public static function login(array $attributes)
     {
@@ -237,20 +237,10 @@ class Member extends BaseModel
         if ($model = Member::where('user_id', $uid)->first()) {
             $user = $model->toArray();
             $user['is_affiliate'] = AffiliateLog::checkOpen();
-            //
-            $userRank = $user['rank']['id'];
-            $vip_end_time = $user['original_vip_end_time'];
 
-            // 如果VIP已到期，则将userRank降级
-            if($userRank >= 2 && $vip_end_time < time()){
-                if(empty($user['mobile'])){
-                    $userRank = 0;
-                }else{
-                    $userRank = 1;
-                }
-                self::where('user_id', $uid)->update(['user_rank' => $userRank]);
-                $user['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
-            }
+            //自动更新rank
+            self::autoUpdateRank($user);
+            $userRank = $user['rank']['id'];
 
             $watchedTimes = 0;//已经观看次数
             if($userRank < 2){
@@ -258,7 +248,6 @@ class Member extends BaseModel
                 $watchedTimes = Video::getTodayWatchedTimes($uid);
             }
 
-            $user['watch_times'] = $user['credit_line'];
             $user['watched_times'] = $watchedTimes;
             return self::formatBody(['user' => $user]);
         } else {
@@ -503,7 +492,22 @@ class Member extends BaseModel
 
         self::where('user_id', $uid)->update($data);
 
-        return self::formatBody(['token' => Token::encode(['uid' => $uid]), 'user' => self::find($uid)]);
+        /* 返回数据 */
+        $user = self::where('user_id', $uid)->first()->toArray();
+
+        //自动更新rank
+        self::autoUpdateRank($user);
+        $userRank = $user['rank']['id'];
+
+        $watchedTimes = 0;//已经观看次数
+        if($userRank < 2){
+            //当天观看次数
+            $watchedTimes = Video::getTodayWatchedTimes($uid);
+        }
+
+        $user['watched_times'] = $watchedTimes;
+
+        return self::formatBody(['token' => Token::encode(['uid' => $uid]), 'user' => $user]);
     }
 
     public static function webOauth(array $attributes)
@@ -1025,7 +1029,7 @@ class Member extends BaseModel
         return $this->attributes['sex'];
     }
 
-    public function getCreditLineAttribute()
+    public function getWatchTimesAttribute()
     {
         if($this->attributes['user_rank'] >= 2 && $this->attributes['vip_end_time'] >= time()){
             return -1;  // 无限次数
@@ -1202,20 +1206,10 @@ class Member extends BaseModel
             }
         }
         $info = $model->toArray();
-        //
-        $userRank = $info['rank']['id'];
-        $vip_end_time = $info['original_vip_end_time'];
 
-        // 如果VIP已到期，则将userRank降级
-        if($userRank >= 2 && $vip_end_time < time()){
-            if(empty($user['mobile'])){
-                $userRank = 0;
-            }else{
-                $userRank = 1;
-            }
-            self::where('user_id', $userId)->update(['user_rank' => $userRank]);
-            $info['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
-        }
+        //自动更新rank
+        self::autoUpdateRank($info);
+        $userRank = $info['rank']['id'];
 
         $watchedTimes = 0;//已经观看次数
         if($userRank < 2){
@@ -1223,7 +1217,6 @@ class Member extends BaseModel
             $watchedTimes = Video::getTodayWatchedTimes($userId);
         }
 
-        $info['watch_times'] = $info['credit_line'];
         $info['watched_times'] = $watchedTimes;
         //
         $token = Token::encode(['uid' => $model->user_id]);
@@ -1342,5 +1335,23 @@ class Member extends BaseModel
         ]);
 
         return $new_vip_end_time;
+    }
+
+    //rank自动更新
+    public static function autoUpdateRank(&$user){
+        $userId = $user['id'];
+        $userRank = $user['rank']['id'];
+        $vip_end_time = $user['original_vip_end_time'];
+
+        // 如果VIP已到期，则将userRank降级
+        if($userRank >= 2 && $vip_end_time < time()){
+            if(empty($user['mobile'])){
+                $userRank = 0;
+            }else{
+                $userRank = 1;
+            }
+            self::where('user_id', $userId)->update(['user_rank' => $userRank]);
+            $user['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
+        }
     }
 }
