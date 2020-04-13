@@ -1351,7 +1351,20 @@ class Member extends BaseModel
                 $userRank = 1;
             }
             self::where('user_id', $userId)->update(['user_rank' => $userRank]);
-            $user['rank'] = UserRank::where('rank_id', $userRank)->first()->toArray();
+
+            if($userRank > 0){
+                $rank = UserRank::where('rank_id', $userRank)->first()->toArray();
+            }else{
+                //如果没有等级　默认返回注册用户
+                $rank = array(
+                    'id'=> 0,
+                    'name'=> "注册用户",
+                    'desc'=> "0",
+                    'score_min'=> 0,
+                    'score_max'=> 0,
+                );
+            }
+            $user['rank'] = $rank;
         }
     }
 }
