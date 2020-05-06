@@ -375,8 +375,27 @@ class Video extends BaseModel
             $model = $model->where('cat_id', $category_id);
         }
 
-        $model = $model->where($type, 1)->orderBy('sort_order')->orderBy('last_update', 'desc')->with(['properties'])->limit(12)->get();
-        $data = $model->toArray();
+        $model = $model->where($type, 1);
+
+        $limit = 12;
+
+        // 获取数据总条数
+        $count = $model->count();
+
+        if($count == 0){
+            $data = array();
+        }else{
+            $model = $model->with(['properties']);
+            if($count <= $limit){
+                $model = $model->get();
+            }else{
+                // 随机查询
+                $offset = random_int(0, $count - $limit);
+                $model = $model->offset($offset)->limit($limit)->get();
+            }
+
+            $data = $model->toArray();
+        }
 
         return $data;
     }
