@@ -24,7 +24,8 @@ class UserController extends Controller
     {
         $rules = [
             'username' => 'required|string',
-            'password' => 'required|min:6|max:20'
+            'password' => 'required|min:6|max:20',
+            'device_id' => 'string',
         ];
 
         if ($error = $this->validateInput($rules)) {

@@ -51,6 +51,9 @@ class Member extends BaseModel
 
             UserRegStatus::toUpdate($model->user_id, 1);
 
+            //更新机器码和user对应关系
+            UserDevice::where('device_id', $device_id)->update(['user_id' => $model->user_id]);
+
             return self::formatBody(['token' => $token, 'user' => $model->toArray()]);
         }
 
